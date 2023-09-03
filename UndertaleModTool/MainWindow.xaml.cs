@@ -374,6 +374,22 @@ namespace UndertaleModTool
                 if (File.Exists(arg))
                 {
                     await LoadFile(arg, true, isLaunch || isSpecialLaunch);
+                    if (SettingsWindow.ProfileModeEnabled)
+                    {
+                        var MD5DirName = CurProfileName;
+                        var FileDir = ProfilesFolder;
+                        if (Directory.Exists(FileDir + "\\" + MD5DirName + "\\Main"))
+                        {
+                            string[] Files = Directory.GetFiles(FileDir + "\\" + MD5DirName + "\\Main");
+                            for (var i = 0; i < Files.Length; i++)
+                            {
+                                if (Files[i].EndsWith(".gml"))
+                                {
+                                    ImportCodeFromFile(Files[i], true, true, false, true);
+                                }
+                            }
+                        }
+                    }
                 }
                 else if (arg == "deleteTempFolder") // if was launched from UndertaleModToolUpdater
                 {
@@ -683,7 +699,26 @@ namespace UndertaleModTool
                     else if (IFF_EXTENSIONS.Contains(fileext) || fileext == ".dat" /* audiogroup */)
                     {
                         if (this.ShowQuestion($"Open {filepath} as a data file?") == MessageBoxResult.Yes)
+                        {
                             await LoadFile(filepath, true);
+                            if (SettingsWindow.ProfileModeEnabled)
+                            {
+                                var MD5DirName = CurProfileName;
+                                var FileDir = ProfilesFolder;
+                                if (Directory.Exists(FileDir + "\\" + MD5DirName + "\\Main"))
+                                {
+                                    string[] Files = Directory.GetFiles(FileDir + "\\" + MD5DirName + "\\Main");
+                                    for (var i = 0; i < Files.Length; i++)
+                                    {
+                                        if (Files[i].EndsWith(".gml"))
+                                        {
+                                            ImportCodeFromFile(Files[i], true, true, false, true);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
                     }
                     // else, do something?
                 }
@@ -700,6 +735,22 @@ namespace UndertaleModTool
             if (dlg.ShowDialog(this) == true)
             {
                 await LoadFile(dlg.FileName, true);
+                if (SettingsWindow.ProfileModeEnabled)
+                { 
+                    var MD5DirName = CurProfileName;
+                    var FileDir = ProfilesFolder;
+                    if (Directory.Exists(FileDir + "\\" + MD5DirName + "\\Main"))
+                    {
+                        string[] Files = Directory.GetFiles(FileDir + "\\" + MD5DirName + "\\Main");
+                        for (var i = 0; i < Files.Length; i++)
+                        {
+                            if (Files[i].EndsWith(".gml"))
+                            {
+                                ImportCodeFromFile(Files[i], true, true, false, true);
+                            }
+                        }
+                    }
+                }
                 return true;
             }
             return false;
@@ -1012,7 +1063,7 @@ namespace UndertaleModTool
                             if (data != null)
                             {
                                 data.ToolInfo.ProfileMode = SettingsWindow.ProfileModeEnabled;
-                                data.ToolInfo.CurrentMD5 = BitConverter.ToString(MD5CurrentlyLoaded).Replace("-", "").ToLowerInvariant();
+                                data.ToolInfo.CurrentMD5 = CurProfileName;
                             }
                         }
                         if (data.IsYYC())
@@ -1244,7 +1295,7 @@ namespace UndertaleModTool
                 if (Data != null)
                 {
                     Data.ToolInfo.ProfileMode = SettingsWindow.ProfileModeEnabled;
-                    Data.ToolInfo.CurrentMD5 = BitConverter.ToString(MD5CurrentlyLoaded).Replace("-", "").ToLowerInvariant();
+                    Data.ToolInfo.CurrentMD5 = CurProfileName;
                 }
 
                 #pragma warning disable CA1416
