@@ -28,7 +28,7 @@ namespace UndertaleModLib.Compiler
                 public List<VariablePatch> varPatches = new List<VariablePatch>();
                 public List<FunctionPatch> funcPatches = new List<FunctionPatch>();
                 public List<StringPatch> stringPatches = new List<StringPatch>();
-                public Parser.Statement currentFunctionContext = null;
+                public List<string> currentArgsNames = new List<string>();
                 public CodeWriter(CompileContext context)
                 {
                     compileContext = context;
@@ -191,7 +191,7 @@ namespace UndertaleModLib.Compiler
                                                 patch.Target.Destination = new Reference<UndertaleVariable>(def, patch.VarType);
                                             else
                                                 patch.Target.Value = new Reference<UndertaleVariable>(def, patch.VarType);
-                                            
+
                                             if (patch.VarType == VariableType.Normal)
                                                 patch.Target.TypeInst = InstanceType.Local;
                                             else if (CompileContext.GMS2_3)
@@ -228,7 +228,7 @@ namespace UndertaleModLib.Compiler
                                                                  compileContext.BuiltInList.GlobalArray.ContainsKey(patch.Name) ||
                                                                  compileContext.BuiltInList.GlobalNotArray.ContainsKey(patch.Name) ||
                                                                  compileContext.BuiltInList.Instance.ContainsKey(patch.Name) ||
-                                                                 compileContext.BuiltInList.InstanceLimitedEvent.ContainsKey(patch.Name), 
+                                                                 compileContext.BuiltInList.InstanceLimitedEvent.ContainsKey(patch.Name),
                                                                  compileContext.Data.Strings, compileContext.Data);
                                         if (patch.Target.Kind == Opcode.Pop)
                                             patch.Target.Destination = new Reference<UndertaleVariable>(def, patch.VarType);
@@ -285,7 +285,7 @@ namespace UndertaleModLib.Compiler
                                 compileContext.Data.Functions.Add(childFunction);
 
                                 compileContext.Data.KnownSubFunctions.Add(patch.Name, childFunction);
-                                
+
                                 continue;
                             }
 
@@ -345,7 +345,7 @@ namespace UndertaleModLib.Compiler
                                 {
                                     patch.Target.Value = new UndertaleResourceById<UndertaleString, UndertaleChunkSTRG>(
                                                                         compileContext.Data.Strings[ind], ind);
-                                } 
+                                }
                                 else
                                 {
                                     UndertaleString newString = new UndertaleString(patch.Content);
@@ -657,7 +657,7 @@ namespace UndertaleModLib.Compiler
                                 conditionPatch.Finish(cw);
                                 AssembleStatement(cw, s.Children[2]); // else statement
                                 elsePatch.Finish(cw);
-                            } 
+                            }
                             else
                             {
                                 conditionPatch.Finish(cw);
@@ -727,7 +727,7 @@ namespace UndertaleModLib.Compiler
                                 AssemblyWriterError(cw, "Malformed repeat loop.", s.Token);
                                 break;
                             }
-                            
+
                             // This loop keeps its counter on the stack
 
                             AssembleExpression(cw, s.Children[0]); // number of times to repeat
@@ -877,7 +877,7 @@ namespace UndertaleModLib.Compiler
                                 if (shouldAdd)
                                     alreadyUsed.Add(c);
                             }
-                            
+
                             // Write each case statement's code!
                             for (int i = 0; i < cases.Count; i++)
                             {
@@ -1035,7 +1035,7 @@ namespace UndertaleModLib.Compiler
                                 if (oc.Kind == OtherContext.ContextKind.Switch)
                                 {
                                     cw.Emit(Opcode.Popz, oc.TypeToPop);
-                                } 
+                                }
                                 else
                                 {
                                     // With
@@ -1056,7 +1056,7 @@ namespace UndertaleModLib.Compiler
                                 });
                             }
                             cw.Emit(Opcode.Ret, DataType.Variable);
-                        } 
+                        }
                         else
                         {
                             // Returns nothing, basically the same as exit
@@ -1087,7 +1087,7 @@ namespace UndertaleModLib.Compiler
                 // Right
                 AssembleExpression(cw, s.Children[2]);
                 var type = cw.typeStack.Pop();
-                if ((needsToBeIntOrLong && type != DataType.Int32 && type != DataType.Int64) 
+                if ((needsToBeIntOrLong && type != DataType.Int32 && type != DataType.Int64)
                     || (!needsToBeIntOrLong && type == DataType.Boolean))
                 {
                     cw.Emit(Opcode.Conv, type, DataType.Int32);
@@ -1096,13 +1096,13 @@ namespace UndertaleModLib.Compiler
 
                 // Actual operation
                 cw.Emit(op, type, DataType.Variable);
-                
+
                 // Store back, using duplicate reference if necessary
                 AssembleStoreVariable(cw, s.Children[0], DataType.Variable, !isSingle, true);
             }
 
             private static void AssemblePostOrPre(CodeWriter cw, Parser.Statement s, bool isPost, bool isExpression)
-            { 
+            {
                 // Variable to operate on, duplicated second-to-last variable if necessary
                 bool isSingle;
                 bool isArray;
@@ -1312,7 +1312,7 @@ namespace UndertaleModLib.Compiler
                             var func = cw.compileContext.Data.Functions.FirstOrDefault(f => f.Name.Content == "gml_Script_" + funcDefName.Text);
                             if (func != null)
                                 cw.compileContext.Data.KnownSubFunctions.TryAdd(funcDefName.Text, func);
-                            
+
                             if (cw.compileContext.Data.KnownSubFunctions.ContainsKey(funcDefName.Text))
                             {
                                 string subFunctionName = cw.compileContext.Data.KnownSubFunctions[funcDefName.Text].Name.Content;
@@ -1332,10 +1332,17 @@ namespace UndertaleModLib.Compiler
                                 });
                             }
                             cw.loopContexts.Push(new LoopContext(endPatch, startPatch));
-                            var oldFuncContext = cw.currentFunctionContext;
-                            cw.currentFunctionContext = e;
+
+                            List<string> argsList = new();
+                            foreach (var arg in e.Children[0].Children)
+                            {
+                                argsList.Add(arg.Text);
+                            }
+
+                            var oldArgsNames = cw.currentArgsNames;
+                            cw.currentArgsNames = argsList;
                             AssembleStatement(cw, e.Children[1]); // body
-                            cw.currentFunctionContext = oldFuncContext;
+                            cw.currentArgsNames = oldArgsNames;
                             AssembleExit(cw);
                             cw.loopContexts.Pop();
                             endPatch.Finish(cw);
@@ -1400,7 +1407,7 @@ namespace UndertaleModLib.Compiler
                                     if (isAnd)
                                     {
                                         branchPatch.Add(cw.Emit(Opcode.Bf));
-                                    } 
+                                    }
                                     else
                                     {
                                         branchPatch.Add(cw.Emit(Opcode.Bt));
@@ -1420,7 +1427,7 @@ namespace UndertaleModLib.Compiler
                                 if (isAnd)
                                 {
                                     cw.Emit(Opcode.Push, DataType.Int16).Value = (short)0;
-                                } 
+                                }
                                 else
                                 {
                                     cw.Emit(Opcode.Push, DataType.Int16).Value = (short)1;
@@ -1429,7 +1436,7 @@ namespace UndertaleModLib.Compiler
 
                                 return;
                             }
-                            
+
                             for (int i = 1; i < e.Children.Count; i++)
                             {
                                 // Push the next value to the stack
@@ -1826,14 +1833,22 @@ namespace UndertaleModLib.Compiler
                         switch (id)
                         {
                             case -1:
-                                if (cw.compileContext.BuiltInList.GlobalArray.ContainsKey(name) || cw.compileContext.BuiltInList.GlobalNotArray.ContainsKey(name) || (cw.currentFunctionContext != null && cw.compileContext.LocalArgs[cw.currentFunctionContext].ContainsKey(name)))
+                                if (cw.compileContext.BuiltInList.GlobalArray.ContainsKey(name)
+                                    || cw.compileContext.BuiltInList.GlobalNotArray.ContainsKey(name)
+                                    || cw.currentArgsNames.Contains(name))
                                 {
+                                    if (name.In(cw.currentArgsNames.ToArray()))
+                                    {
+                                        int index = cw.currentArgsNames.IndexOf(name);
+                                        name = "argument" + index;
+                                    }
+
                                     if (CompileContext.GMS2_3 &&
                                         (name.In(
-                                            "argument0",  "argument1",  "argument2",  "argument3",
-                                            "argument4",  "argument5",  "argument6",  "argument7",
-                                            "argument8",  "argument9",  "argument10", "argument11",
-                                            "argument12", "argument13", "argument14", "argument15", "a")))
+                                            "argument0", "argument1", "argument2", "argument3",
+                                            "argument4", "argument5", "argument6", "argument7",
+                                            "argument8", "argument9", "argument10", "argument11",
+                                            "argument12", "argument13", "argument14", "argument15")))
                                     {
                                         // 2.3 argument (excuse the condition... the ID seems to be lost, so this is the easiest way to check)
                                         cw.varPatches.Add(new VariablePatch()
@@ -1959,7 +1974,7 @@ namespace UndertaleModLib.Compiler
                             }
                         }
                     }
-                } 
+                }
                 else if (e.Kind == Parser.Statement.StatementKind.ExprSingleVariable)
                 {
                     // Assume local or self if necessary. Global doesn't apply here
@@ -2124,13 +2139,23 @@ namespace UndertaleModLib.Compiler
                         int id = s.Children[0].ID;
                         if (id >= 100000)
                             id -= 100000;
-                        if (CompileContext.GMS2_3 && (cw.compileContext.BuiltInList.GlobalArray.ContainsKey(s.Children[0].Text) || cw.compileContext.BuiltInList.GlobalNotArray.ContainsKey(s.Children[0].Text)) || (cw.currentFunctionContext != null && cw.compileContext.LocalArgs[cw.currentFunctionContext].ContainsKey(s.Children[0].Text)))
+                        if (CompileContext.GMS2_3
+                            && (cw.compileContext.BuiltInList.GlobalArray.ContainsKey(s.Children[0].Text)
+                                || cw.compileContext.BuiltInList.GlobalNotArray.ContainsKey(s.Children[0].Text)
+                                || cw.currentArgsNames.Contains(s.Children[0].Text))
+                            )
                         {
-                            if ((s.Children[0].Text.In(
+                            if (s.Children[0].Text.In(cw.currentArgsNames.ToArray()))
+                            {
+                                int index = cw.currentArgsNames.IndexOf(s.Children[0].Text);
+                                s.Children[0].Text = "argument" + index;
+                            }
+
+                            if (s.Children[0].Text.In(
                                 "argument0", "argument1", "argument2", "argument3",
                                 "argument4", "argument5", "argument6", "argument7",
                                 "argument8", "argument9", "argument10", "argument11",
-                                "argument12", "argument13", "argument14", "argument15")))
+                                "argument12", "argument13", "argument14", "argument15"))
                             {
                                 cw.varPatches.Add(new VariablePatch()
                                 {
@@ -2222,7 +2247,7 @@ namespace UndertaleModLib.Compiler
                         if (cw.compileContext.LocalVars.ContainsKey(variableName))
                         {
                             fix2.ID = -7; // local
-                        } 
+                        }
                         else if (cw.compileContext.GlobalVars.ContainsKey(variableName))
                         {
                             fix2.ID = -5; // global
