@@ -1,258 +1,42 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Pipes;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using UndertaleModLib.Decompiler;
 using UndertaleModLib.Models;
 
-namespace UndertaleModLib.Scripting;
-
-/// <summary>
-/// The exception that is thrown when trivial errors happen during runtime of UndertaleModTool scripts. <br/>
-/// This exception does not contain a stacktrace and should more be handled like an error message that stops execution of the currently running script.
-/// </summary>
-/// <example><code>if (Data is null) throw new ScriptException("Please load data.win first!);</code></example>
-public class ScriptException : Exception
+namespace UndertaleModLib.Scripting
 {
     /// <summary>
-    /// Initializes a new instance of the IOException class with its message string set to the empty string ("").
+    /// The exception that is thrown when trivial errors happen during runtime of UndertaleModTool scripts. <br/>
+    /// This exception does not contain a stacktrace and should more be handled like an error message that stops execution of the currently running script.
     /// </summary>
-    public ScriptException()
+    /// <example><code>if (Data is null) throw new ScriptException("Please load data.win first!);</code></example>
+    public class ScriptException : Exception
     {
-    }
-
-    /// <summary>
-    /// Initializes a new instance of the IOException class with its message string set to <paramref name="msg"/>.
-    /// </summary>
-    /// <param name="msg">A <see cref="String"/> that describes the error. The content of <paramref name="msg"/> is intended to be understood by humans.</param>
-    public ScriptException(string msg) : base(msg)
-    {
-    }
-}
-
-/// <summary>
-/// Defines a generalized set of attributes and methods that a value type or class implements
-/// to be able to interact with UndertaleModTool-Scripts.
-/// </summary>
-public interface IScriptInterface
-{
-    /// <summary>
-    /// The data file.
-    /// </summary>
-    UndertaleData Data { get; }
-
-    /// <summary>
-    /// The file path where <see cref="Data"/> resides.
-    /// </summary>
-    string FilePath { get; }
-
-    /// <summary>
-    /// The path of the current executed script.
-    /// </summary>
-    string ScriptPath { get; }
-
-    /// <summary>
-    /// The object that's currently highlighted in the GUI.
-    /// </summary>
-    object Highlighted { get; }
-
-    /// <summary>
-    /// The object that's currently selected in the GUI.
-    /// </summary>
-    object Selected { get; }
-
-    /// <summary>
-    /// Indicates whether saving is currently enabled.
-    /// </summary>
-    bool CanSave { get; }
-
-    /// <summary>
-    /// Indicates whether the last script executed successfully or not.
-    /// </summary>
-    bool ScriptExecutionSuccess { get; }
-
-    /// <summary>
-    /// Error message of the last executed script. Will be <c>""</c> (<see cref="String.Empty"/>) if no error occured.
-    /// </summary>
-    string ScriptErrorMessage { get; }
-
-    /// <summary>
-    /// Path of the main executable that's currently running.
-    /// </summary>
-    /// <remarks>For example <c>C://Users/me/UMT/UMT.exe</c> or <c>/bin/UMTCLI</c>.</remarks>
-    string ExePath { get; }
-
-    /// <summary>
-    /// A string, detailing the type of the last encountered error.
-    /// </summary>
-    string ScriptErrorType { get; }
-
-    /// <summary>
-    /// Indicates whether the user has enabled the setting to use decompiled code cache.
-    /// </summary>
-    bool GMLCacheEnabled { get; }
-
-    /// <summary>
-    /// Indicating whether the Program is currently closed.
-    /// //TODO: Only GUI + ExportAllRoomsToPng.csx uses this, but nothing should ever need to access this value.
-    /// <c>"somehow Dispatcher.Invoke() in a loop creates executable code queue that doesn't clear on app closing."</c>
-    /// </summary>
-    bool IsAppClosed { get; }
-
-    /// <summary>
-    /// Ensures that a valid data file (<see cref="Data"/>) is loaded. An exception should be thrown if it isn't.
-    /// </summary>
-    void EnsureDataLoaded()
-    {
-        if (Data is null)
-            throw new ScriptException("No data file is currently loaded!");
-    }
-
-    /// <summary>
-    /// Creates a new Data file asynchronously.
-    /// </summary>
-    /// <returns><see langword="true"/> if task was successful, <see langword="false"/> if not.</returns>
-    Task<bool> MakeNewDataFile();
-
-    /// <summary> Obsolete. Use <see cref="MakeNewDataFile"/>. </summary>
-    [Obsolete("Use MakeNewDataFile instead!")]
-    sealed Task<bool> Make_New_File()
-    {
-        return MakeNewDataFile();
-    }
-
-    //TODO: i have absolutely no idea what any of these do.
-    void ReplaceTempWithMain(bool imAnExpertBtw = false);
-    void ReplaceMainWithTemp(bool imAnExpertBtw = false);
-    void ReplaceTempWithCorrections(bool imAnExpertBtw = false);
-    void ReplaceCorrectionsWithTemp(bool imAnExpertBtw = false);
-    void UpdateCorrections(bool imAnExpertBtw = false);
-
-    /// <summary>
-    /// Used in Scripts in order to show a message to the user.
-    /// </summary>
-    /// <param name="message">The message to show.</param>
-    void ScriptMessage(string message);
-
-    //TODO: currently should get repurposed/renamed?
-    /// <summary>
-    /// Sets the message of the variable holding text from the console. Currently only used in GUI.
-    /// </summary>
-    /// <param name="message">The message to set it to.</param>
-    void SetUMTConsoleText(string message);
-
-    /// <summary>
-    /// Used in Scripts in order to ask a yes/no question to the user which they can answer.
-    /// </summary>
-    /// <param name="message">The message to ask.</param>
-    /// <returns><see langword="true"/> if user affirmed the question, <see langword="false"/> if not.</returns>
-    bool ScriptQuestion(string message);
-
-    /// <summary>
-    /// Used in Scripts in order to show an error to the user.
-    /// </summary>
-    /// <param name="error">The error message to show.</param>
-    /// <param name="title">A short-descriptive title.</param>
-    /// <param name="SetConsoleText">Whether to call <see cref="SetUMTConsoleText"/> with <paramref name="error"/>.</param>
-    //TODO: setConsoleText should get a *clearer* name
-    void ScriptError(string error, string title = "Error", bool SetConsoleText = true);
-
-    /// <summary>
-    /// Used in Scripts in order to open a URL in the users' browser.
-    /// </summary>
-    /// <param name="url">The URL to open.</param>
-    void ScriptOpenURL(string url);
-
-    /// <summary>
-    /// Run a C# UndertaleModLib compatible script file.
-    /// </summary>
-    /// <param name="path">File path to the script file to execute.</param>
-    /// <returns>A <see cref="bool"/> that indicates whether the execution of the script was successful.</returns>
-    bool RunUMTScript(string path);
-
-    /// <summary>
-    /// Lint whether a file is C# UndertaleModLib compatible.
-    /// </summary>
-    /// <param name="path">File path to the script file to lint.</param>
-    /// <returns>A <see cref="bool"/> that indicates whether the linting was successful.</returns>
-    bool LintUMTScript(string path);
-
-    /// <summary>
-    /// Initializes a Script Dialog with default values
-    /// </summary>
-    void InitializeScriptDialog();
-
-    //TODO: some profile mod stuff, not quite sure on what its supposed to do.
-    void ReapplyProfileCode();
-    void NukeProfileGML(string codeName);
-
-    /// <summary>
-    ///Get the decompiled text from a code entry (like <c>gml_Script_moveTo</c>).
-    /// </summary>
-    /// <param name="codeName">The name of the code entry from which to get the decompiled code from.</param>
-    /// <param name="context">The GlobalDecompileContext</param>
-    /// <returns>Decompiled text as a <see cref="string"/>.</returns>
-    /// <remarks>This will return a string, even if the decompilation failed! Usually commented out and featuring
-    /// <c>DECOMPILER FAILED!</c> .</remarks>
-    string GetDecompiledText(string codeName, GlobalDecompileContext context = null);
-
-    /// <summary>
-    /// Get the decompiled text from an <see cref="UndertaleCode"/> object.
-    /// </summary>
-    /// <param name="code">The object from which to get the decompiled code from.</param>
-    /// <param name="context">The GlobalDecompileContext</param>
-    /// <returns>Decompiled text as a <see cref="string"/>.</returns>
-    /// <remarks>This will return a string, even if the decompilation failed! Usually commented out and featuring
-    /// <c>DECOMPILER FAILED!</c> .</remarks>
-    string GetDecompiledText(UndertaleCode code, GlobalDecompileContext context = null);
-
-    /// <summary>
-    ///  Get the disassembly from a code entry (like <c>gml_Script_moveTo</c>).
-    /// </summary>
-    /// <param name="codeName">The name of the code entry from which to get the disassembly from.</param>
-    /// <returns>Disassembly as <see cref="string"/>.</returns>
-    /// <remarks>This will return a string, even if the disassembly failed! Usually commented out and featuring
-    /// <c>DISASSEMBLY FAILED!</c> .</remarks>
-    string GetDisassemblyText(string codeName);
-
-    /// <summary>
-    /// Get the disassembly from an <see cref="UndertaleCode"/> object.
-    /// </summary>
-    /// <param name="code">The object from which to get the disassembly from.</param>
-    /// <returns>Disassembly as <see cref="string"/>.</returns>
-    /// <remarks>This will return a string, even if the disassembly failed! Usually commented out and featuring
-    /// <c>DISASSEMBLY FAILED!</c> .</remarks>
-    string GetDisassemblyText(UndertaleCode code);
-
-    /// <summary>
-    /// Check whether two files are identical.
-    /// </summary>
-    /// <param name="file1">File path to first file.</param>
-    /// <param name="file2">File path to second file.</param>
-    /// <returns>A <see cref="bool"/> that indicates whether the files are identical or not.</returns>
-    bool AreFilesIdentical(string file1, string file2)
-    {
-        using FileStream fs1 = new FileStream(file1, FileMode.Open, FileAccess.Read, FileShare.Read);
-        using FileStream fs2 = new FileStream(file2, FileMode.Open, FileAccess.Read, FileShare.Read);
-
-        if (fs1.Length != fs2.Length) return false; // different size, files can't be the same
-
-        while (true)
+        /// <summary>
+        /// Initializes a new instance of the IOException class with its message string set to the empty string ("").
+        /// </summary>
+        public ScriptException()
         {
-            int b1 = fs1.ReadByte();
-            int b2 = fs2.ReadByte();
-            if (b1 != b2) return false; // different contents, files are not the same
-            if (b1 == -1) break; // here both bytes are the same. Thus we only need to check if one is at end-of-file.
         }
 
-        // identical
-        return true;
+        /// <summary>
+        /// Initializes a new instance of the IOException class with its message string set to <paramref name="msg"/>.
+        /// </summary>
+        /// <param name="msg">A <see cref="String"/> that describes the error. The content of <paramref name="msg"/> is intended to be understood by humans.</param>
+        public ScriptException(string msg) : base(msg)
+        {
+        }
     }
 
     /// <summary>
-    /// Allows the user to input text with the option to cancel it.
+    /// Defines a generalized set of attributes and methods that a value type or class implements
+    /// to be able to interact with UndertaleModTool-Scripts.
     /// </summary>
     /// <param name="title">A short descriptive title.</param>
     /// <param name="label">A label describing what the user should input.</param>

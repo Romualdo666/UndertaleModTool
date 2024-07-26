@@ -210,9 +210,7 @@ public class UndertaleInstruction : UndertaleObject
     public object Value { get; set; }
     public Reference<UndertaleVariable> Destination { get; set; }
     public Reference<UndertaleFunction> Function { get; set; }
-    private int _IntegerArgument;
-    public int JumpOffset { get => _IntegerArgument; set => _IntegerArgument = value; }
-    public int IntArgument { get => _IntegerArgument; set => _IntegerArgument = value; }
+    public int JumpOffset { get; set; }
     public bool JumpOffsetPopenvExitMagic { get; set; }
     public ushort ArgumentsCount { get; set; }
     public byte Extra { get; set; }
@@ -803,6 +801,7 @@ public class UndertaleInstruction : UndertaleObject
             case InstructionType.DoubleTypeInstruction:
             case InstructionType.ComparisonInstruction:
             case InstructionType.GotoInstruction:
+            case InstructionType.BreakInstruction:
                 reader.Position += 4;
                 break;
 
@@ -847,17 +846,6 @@ public class UndertaleInstruction : UndertaleObject
             case InstructionType.CallInstruction:
                 reader.Position += 8;
                 return 1; // "Function"
-
-            case InstructionType.BreakInstruction:
-                {
-                    reader.Position += 2;
-                    DataType Type1 = (DataType)reader.ReadByte();
-                    if (Type1 == DataType.Int32)
-                        reader.Position += 5;
-                    else
-                        reader.Position += 1;
-                    break;
-                }
 
             default:
                 throw new IOException("Unknown opcode " + Kind.ToString().ToUpper(CultureInfo.InvariantCulture));
@@ -1048,8 +1036,6 @@ public class UndertaleInstruction : UndertaleObject
                 return 3;
             else if (Type1 != DataType.Int16)
                 return 2;
-        if (Kind == Opcode.Break && Type1 == DataType.Int32)
-            return 2;
         return 1;
     }
 }

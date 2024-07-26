@@ -984,7 +984,7 @@ namespace UndertaleModLib.Decompiler
 
                     Block b = blockList[i];
 
-                    Block[] e;
+                    IEnumerable<Block> e;
                     if (b.conditionalExit)
                     {
                         reverseUse2[0] = b.nextBlockTrue;
@@ -1572,7 +1572,7 @@ namespace UndertaleModLib.Decompiler
             {
                 throw new TimeoutException("The building cache process hung.\n" +
                                            "The function code entries that didn't manage to decompile:\n" +
-                                           String.Join('\n', processingCodeList.Keys) + "\n\n" +
+                                           String.Join('\n', processingCodeList.Keys) + "\n\n" + 
                                            "You should save the game data (if it's necessary) and re-open the app.\n");
             }
         }
@@ -1595,13 +1595,8 @@ namespace UndertaleModLib.Decompiler
                 return meetPoint;
 
             Queue<Block> blocks = new Queue<Block>();
-            // Preventing the same block and its children from being queued repeatedly
-            // becomes increasingly important on large switches. The HashSet should give
-            // good performance while preventing this type of duplication.
-            HashSet<Block> usedBlocks = new HashSet<Block>(); 
 
             blocks.Enqueue(start);
-            usedBlocks.Add(start);
             while (blocks.Count > 0)
             {
                 Block test = blocks.Dequeue();
@@ -1610,16 +1605,10 @@ namespace UndertaleModLib.Decompiler
                     return end;
                 if (test == meetPoint)
                     return meetPoint;
-                if (!usedBlocks.Contains(test.nextBlockTrue))
-                {
-                    blocks.Enqueue(test.nextBlockTrue);
-                    usedBlocks.Add(test.nextBlockTrue);
-                }
-                if (!usedBlocks.Contains(test.nextBlockFalse))
-                {
+
+                blocks.Enqueue(test.nextBlockTrue);
+                if (test.nextBlockTrue != test.nextBlockFalse)
                     blocks.Enqueue(test.nextBlockFalse);
-                    usedBlocks.Add(test.nextBlockFalse);
-                }
 
             }
 

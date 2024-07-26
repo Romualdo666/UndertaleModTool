@@ -677,7 +677,6 @@ namespace UndertaleModLib
         public byte[] Padding;
 
         private static bool checkedFor2022_2;
-        private static bool checkedFor2023_6;
         private void CheckForGM2022_2(UndertaleReader reader)
         {
            /* This code performs four checks to identify GM2022.2.
@@ -807,9 +806,6 @@ namespace UndertaleModLib
             if (!checkedFor2022_2)
                 CheckForGM2022_2(reader);
 
-            if (!checkedFor2023_6)
-                CheckForGM2023_6(reader);
-
             base.UnserializeChunk(reader);
 
             Padding = reader.ReadBytes(512);
@@ -818,10 +814,8 @@ namespace UndertaleModLib
         internal override uint UnserializeObjectCount(UndertaleReader reader)
         {
             checkedFor2022_2 = false;
-            checkedFor2023_6 = false;
 
             CheckForGM2022_2(reader);
-            CheckForGM2023_6(reader);
 
             return base.UnserializeObjectCount(reader);
         }

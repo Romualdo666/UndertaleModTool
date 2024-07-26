@@ -5,7 +5,6 @@ using System.Text;
 using System.Threading.Tasks;
 using UndertaleModLib.Models;
 using static UndertaleModLib.Compiler.Compiler.AssemblyWriter;
-using AssetRefType = UndertaleModLib.Decompiler.Decompiler.ExpressionAssetRef.RefType;
 
 namespace UndertaleModLib.Compiler
 {
@@ -169,30 +168,15 @@ namespace UndertaleModLib.Compiler
             }
         }
 
-        private void AddAssetsFromList<T>(IList<T> list, AssetRefType type) where T : UndertaleNamedResource
+        private void AddAssetsFromList<T>(IList<T> list) where T : UndertaleNamedResource
         {
             if (list == null)
                 return;
-            if (TypedAssetRefs)
+            for (int i = 0; i < list.Count; i++)
             {
-                for (int i = 0; i < list.Count; i++)
-                {
-                    string name = list[i].Name?.Content;
-                    if (name != null)
-                    {
-                        // Typed asset refs pack their type into the ID
-                        assetIds[name] = (i & 0xffffff) | (((int)type & 0x7f) << 24);
-                    }
-                }
-            }
-            else
-            {
-                for (int i = 0; i < list.Count; i++)
-                {
-                    string name = list[i].Name?.Content;
-                    if (name != null)
-                        assetIds[name] = i;
-                }
+                string name = list[i].Name?.Content;
+                if (name != null)
+                    assetIds[name] = i;
             }
         }
     }
