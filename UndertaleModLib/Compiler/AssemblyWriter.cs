@@ -1536,7 +1536,7 @@ namespace UndertaleModLib.Compiler
                                 });
                             }
                             AssembleStatement(cw, e.Children[1]); // body
-                            cw.currentArgsNames = oldArgsNames;
+                            //cw.currentArgsNames = oldArgsNames;
                             AssembleExit(cw);
                             endPatch.Finish(cw);
 

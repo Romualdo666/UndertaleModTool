@@ -519,33 +519,43 @@ public class UndertaleInstruction : UndertaleObject, IGMInstruction
                             //Debug.Assert(Value.GetType() == typeof(double));
                             writer.Write((double)Value);
                             break;
-                        }
-                        if (Value.GetType() == typeof(Reference<UndertaleVariable>))
-                        {
+                        case DataType.Float:
+                            //Debug.Assert(Value.GetType() == typeof(float));
+                            writer.Write((float)Value);
+                            break;
+                        case DataType.Int32:
+                            if (Value.GetType() == typeof(Reference<UndertaleFunction>))
+                            {
+                                writer.WriteUndertaleObject((Reference<UndertaleFunction>)Value);
+                                break;
+                            }
+                            if (Value.GetType() == typeof(Reference<UndertaleVariable>))
+                            {
+                                writer.WriteUndertaleObject((Reference<UndertaleVariable>)Value);
+                                break;
+                            }
+                            //Debug.Assert(Value.GetType() == typeof(int));
+                            writer.Write((int)Value);
+                            break;
+                        case DataType.Int64:
+                            //Debug.Assert(Value.GetType() == typeof(long));
+                            writer.Write((long)Value);
+                            break;
+                        case DataType.Boolean:
+                            //Debug.Assert(Value.GetType() == typeof(bool));
+                            writer.Write((bool)Value ? 1 : 0);
+                            break;
+                        case DataType.Variable:
+                            //Debug.Assert(Value.GetType() == typeof(Reference<UndertaleVariable>));
                             writer.WriteUndertaleObject((Reference<UndertaleVariable>)Value);
                             break;
-                        }
-                        //Debug.Assert(Value.GetType() == typeof(int));
-                        writer.Write((int)Value);
-                        break;
-                    case DataType.Int64:
-                        //Debug.Assert(Value.GetType() == typeof(long));
-                        writer.Write((long)Value);
-                        break;
-                    case DataType.Boolean:
-                        //Debug.Assert(Value.GetType() == typeof(bool));
-                        writer.Write((bool)Value ? 1 : 0);
-                        break;
-                    case DataType.Variable:
-                        //Debug.Assert(Value.GetType() == typeof(Reference<UndertaleVariable>));
-                        writer.WriteUndertaleObject((Reference<UndertaleVariable>)Value);
-                        break;
-                    case DataType.String:
-                        //Debug.Assert(Value.GetType() == typeof(UndertaleResourceById<UndertaleString, UndertaleChunkSTRG>));
-                        writer.WriteUndertaleObject((UndertaleResourceById<UndertaleString, UndertaleChunkSTRG>)Value);
-                        break;
-                    case DataType.Int16:
-                        break;
+                        case DataType.String:
+                            //Debug.Assert(Value.GetType() == typeof(UndertaleResourceById<UndertaleString, UndertaleChunkSTRG>));
+                            writer.WriteUndertaleObject((UndertaleResourceById<UndertaleString, UndertaleChunkSTRG>)Value);
+                            break;
+                        case DataType.Int16:
+                            break;
+                    }
                 }
                 break;
 
@@ -756,22 +766,19 @@ public class UndertaleInstruction : UndertaleObject, IGMInstruction
 
             case InstructionType.BreakInstruction:
                 {
-                    IntArgument = reader.ReadInt32();
-                    if (!reader.undertaleData.IsVersionAtLeast(2023, 8))
-                        reader.undertaleData.SetGMS2Version(2023, 8);
-                    if (!reader.undertaleData.IsVersionAtLeast(2024, 4))
-                    {
-                        if (CheckIfAssetTypeIs2024_4(reader.undertaleData, IntArgument & 0xffffff, IntArgument >> 24))
-                            reader.undertaleData.SetGMS2Version(2024, 4);
-                    }
-                }
-                if (reader.undertaleData.IsVersionAtLeast(2, 3))
-                {
-                    if ((short)Value == -10) // chknullish instruction, added in 2.3.7
+                    Value = reader.ReadInt16();
+                    Type1 = (DataType)reader.ReadByte();
+                    if (reader.ReadByte() != (byte)Kind) throw new Exception("really shouldn't happen");
+                    if (Type1 == DataType.Int32)
                     {
                         IntArgument = reader.ReadInt32();
                         if (!reader.undertaleData.IsVersionAtLeast(2023, 8))
                             reader.undertaleData.SetGMS2Version(2023, 8);
+                        if (!reader.undertaleData.IsVersionAtLeast(2024, 4))
+                        {
+                            if (CheckIfAssetTypeIs2024_4(reader.undertaleData, IntArgument & 0xffffff, IntArgument >> 24))
+                                reader.undertaleData.SetGMS2Version(2024, 4);
+                        }
                     }
                     if (reader.undertaleData.IsVersionAtLeast(2, 3))
                     {
@@ -1627,7 +1634,7 @@ public class UndertaleCode : UndertaleNamedResource, UndertaleObjectWithBlobs, I
         Name = null;
         _unsupportedBuffer = null;
     }
-    
+
     // Underanalyzer implementations
     IGMString IGMCode.Name => Name;
     int IGMCode.Length => (int)Length;
