@@ -256,7 +256,8 @@ namespace UndertaleModTool
                                 .AddReferences(typeof(UndertaleObject).GetTypeInfo().Assembly,
                                                 GetType().GetTypeInfo().Assembly,
                                                 typeof(JsonConvert).GetTypeInfo().Assembly,
-                                                typeof(System.Text.RegularExpressions.Regex).GetTypeInfo().Assembly)
+                                                typeof(System.Text.RegularExpressions.Regex).GetTypeInfo().Assembly,
+                                                typeof(Underanalyzer.Decompiler.DecompileContext).Assembly)
                                 .WithEmitDebugInformation(true); //when script throws an exception, add a exception location (line number)
             });
 
@@ -662,6 +663,8 @@ namespace UndertaleModTool
             FilePath = null;
             Data = UndertaleData.CreateNew();
             Data.ToolInfo.AppDataProfiles = ProfilesFolder;
+            Data.ToolInfo.DecompilerSettings = SettingsWindow.DecompilerSettings;
+            Data.ToolInfo.InstanceIdPrefix = () => SettingsWindow.InstanceIdPrefix;
             CloseChildFiles();
             OnPropertyChanged("Data");
             OnPropertyChanged("FilePath");
@@ -1090,6 +1093,8 @@ namespace UndertaleModTool
                         CachedTileDataLoader.Reset();
 
                         Data.ToolInfo.AppDataProfiles = ProfilesFolder;
+                        Data.ToolInfo.DecompilerSettings = SettingsWindow.DecompilerSettings;
+                        Data.ToolInfo.InstanceIdPrefix = () => SettingsWindow.InstanceIdPrefix;
                         FilePath = filename;
                         OnPropertyChanged("Data");
                         OnPropertyChanged("FilePath");
@@ -1165,7 +1170,7 @@ namespace UndertaleModTool
                         object countLock = new object();
                         string[] outputs = new string[Data.Code.Count];
                         UndertaleDebugInfo[] outputsOffsets = new UndertaleDebugInfo[Data.Code.Count];
-                        GlobalDecompileContext context = new GlobalDecompileContext(Data, false);
+                        GlobalDecompileContext context = new(Data);
                         Parallel.For(0, Data.Code.Count, (i) =>
                         {
                             var code = Data.Code[i];
@@ -1176,7 +1181,8 @@ namespace UndertaleModTool
                                 string output;
                                 try
                                 {
-                                    output = Decompiler.Decompile(code, context);
+                                    output = new Underanalyzer.Decompiler.DecompileContext(context, code, Data.ToolInfo.DecompilerSettings)
+                                        .DecompileToString();
                                 }
                                 catch (Exception e)
                                 {
@@ -1483,7 +1489,7 @@ namespace UndertaleModTool
             });
         }
 
-        public async Task<bool> GenerateGMLCache(ThreadLocal<GlobalDecompileContext> decompileContext = null, object dialog = null, bool clearGMLEditedBefore = false)
+        public async Task<bool> GenerateGMLCache(GlobalDecompileContext decompileContext = null, object dialog = null, bool clearGMLEditedBefore = false)
         {
             if (!SettingsWindow.UseGMLCache)
                 return false;
@@ -1518,13 +1524,12 @@ namespace UndertaleModTool
             else
                 existedDialog = true;
 
-            if (decompileContext is null)
-                decompileContext = new(() => new GlobalDecompileContext(Data, false));
+            decompileContext ??= new(Data);
 
-            if (Data.KnownSubFunctions is null) //if we run script before opening any code
+            if (Data.GlobalFunctions is null) // If we run script before opening any code
             {
-                SetProgressBar(null, "Building the cache of all sub-functions...", 0, 0);
-                await Task.Run(() => Decompiler.BuildSubFunctionCache(Data));
+                SetProgressBar(null, "Building a cache of all global functions...", 0, 0);
+                await Task.Run(() => GlobalDecompileContext.BuildGlobalFunctionCache(Data));
             }
 
             if (Data.GMLCache.IsEmpty)
@@ -1538,7 +1543,9 @@ namespace UndertaleModTool
                     {
                         try
                         {
-                            Data.GMLCache[code.Name.Content] = Decompiler.Decompile(code, decompileContext.Value);
+                            Data.GMLCache[code.Name.Content] = 
+                                new Underanalyzer.Decompiler.DecompileContext(decompileContext, code, Data.ToolInfo.DecompilerSettings)
+                                    .DecompileToString();
                         }
                         catch
                         {
@@ -1586,7 +1593,9 @@ namespace UndertaleModTool
                         {
                             try
                             {
-                                Data.GMLCache[code.Name.Content] = Decompiler.Decompile(code, decompileContext.Value);
+                                Data.GMLCache[code.Name.Content] = 
+                                    new Underanalyzer.Decompiler.DecompileContext(decompileContext, code, Data.ToolInfo.DecompilerSettings)
+                                        .DecompileToString();
 
                                 Data.GMLCacheFailed.Remove(code.Name.Content); //that code compiles now
                             }
@@ -2663,8 +2672,7 @@ namespace UndertaleModTool
 
                 ScriptPath = path;
 
-                string compatScriptText = Regex.Replace(scriptText, @"\bDecompileContext(?!\.)\b", "GlobalDecompileContext", RegexOptions.None);
-                object result = await CSharpScript.EvaluateAsync(compatScriptText, scriptOptions, this, typeof(IScriptInterface));
+                object result = await CSharpScript.EvaluateAsync(scriptText, scriptOptions, this, typeof(IScriptInterface));
 
                 if (FinishedMessageEnabled)
                 {
