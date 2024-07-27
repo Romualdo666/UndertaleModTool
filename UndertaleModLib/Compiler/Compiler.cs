@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using UndertaleModLib.Models;
 using static UndertaleModLib.Compiler.Compiler.AssemblyWriter;
+using AssetRefType = UndertaleModLib.Decompiler.Decompiler.ExpressionAssetRef.RefType;
 
 namespace UndertaleModLib.Compiler
 {
@@ -22,7 +23,6 @@ namespace UndertaleModLib.Compiler
         public int LastCompiledArgumentCount = 0;
         public Dictionary<string, string> LocalVars = new Dictionary<string, string>();
         public Dictionary<string, string> GlobalVars = new Dictionary<string, string>();
-        //public Dictionary<Compiler.Parser.Statement, Dictionary<string, int>> LocalArgs = new();
         public Dictionary<string, Dictionary<string, int>> Enums = new Dictionary<string, Dictionary<string, int>>();
         public UndertaleCode OriginalCode;
         public IList<UndertaleVariable> OriginalReferencedLocalVars;
@@ -110,7 +110,7 @@ namespace UndertaleModLib.Compiler
             assetIds.Clear();
             scripts.Clear();
             if (Data is null) return;
-            
+
             int maxSize = 0;
             maxSize += Data.GameObjects?.Count ?? 0;
             maxSize += Data.Sprites?.Count ?? 0;
@@ -126,7 +126,7 @@ namespace UndertaleModLib.Compiler
             maxSize += Data.AnimationCurves?.Count ?? 0;
             maxSize += Data.Sequences?.Count ?? 0;
             maxSize += Data.ParticleSystems?.Count ?? 0;
-            
+
             assetIds.EnsureCapacity(maxSize);
             scripts.EnsureCapacity(Data.Scripts?.Count ?? 0);
 
@@ -168,15 +168,30 @@ namespace UndertaleModLib.Compiler
             }
         }
 
-        private void AddAssetsFromList<T>(IList<T> list) where T : UndertaleNamedResource
+        private void AddAssetsFromList<T>(IList<T> list, AssetRefType type) where T : UndertaleNamedResource
         {
             if (list == null)
                 return;
-            for (int i = 0; i < list.Count; i++)
+            if (TypedAssetRefs)
             {
-                string name = list[i].Name?.Content;
-                if (name != null)
-                    assetIds[name] = i;
+                for (int i = 0; i < list.Count; i++)
+                {
+                    string name = list[i].Name?.Content;
+                    if (name != null)
+                    {
+                        // Typed asset refs pack their type into the ID
+                        assetIds[name] = (i & 0xffffff) | (((int)type & 0x7f) << 24);
+                    }
+                }
+            }
+            else
+            {
+                for (int i = 0; i < list.Count; i++)
+                {
+                    string name = list[i].Name?.Content;
+                    if (name != null)
+                        assetIds[name] = i;
+                }
             }
         }
     }

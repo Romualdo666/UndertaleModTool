@@ -24,7 +24,8 @@ namespace UndertaleModLib.Decompiler
             { -7,  "setstatic" },
             { -8,  "savearef" },
             { -9,  "restorearef" },
-            { -10, "chknullish" }
+            { -10, "chknullish" },
+            { -11, "pushref" }
         };
         public static Dictionary<string, short> NameToBreakID = new Dictionary<string, short>()
         {
@@ -37,7 +38,8 @@ namespace UndertaleModLib.Decompiler
             { "setstatic", -7 },
             { "savearef", -8 },
             { "restorearef", -9 },
-            { "chknullish", -10 }
+            { "chknullish", -10 },
+            { "pushref", -11 }
         };
 
         private static readonly Regex callInstrRegex = new(@"^(.*)\(argc=(.*)\)$", RegexOptions.Compiled);
@@ -221,6 +223,7 @@ namespace UndertaleModLib.Decompiler
 
                 case UndertaleInstruction.InstructionType.BreakInstruction:
                     if (breakId != 0)
+                    {
                         instr.Value = breakId;
                         if (breakId == -11) // pushref
                         {
@@ -459,9 +462,10 @@ namespace UndertaleModLib.Decompiler
                         string instancestr = str.Substring(0, instanceEnd);
                         str = str.Substring(instanceEnd + 1);
                         realinstance = (UndertaleInstruction.InstanceType)Enum.Parse(typeof(UndertaleInstruction.InstanceType), instancestr, true);
-                    } else
+                    }
+                    else
                     {
-                        if (type == UndertaleInstruction.VariableType.Array || 
+                        if (type == UndertaleInstruction.VariableType.Array ||
                             type == UndertaleInstruction.VariableType.StackTop)
                         {
                             throw new Exception("Old instruction format is incompatible (missing instance type in array or stacktop)");

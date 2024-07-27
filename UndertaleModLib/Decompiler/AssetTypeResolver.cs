@@ -43,6 +43,9 @@ namespace UndertaleModLib.Decompiler
         GameObject, // or GameObjectInstance or InstanceType, these are all interchangable
         Script,
         Shader,
+        AnimCurve,
+        Sequence,
+        ParticleSystem,
 
         EventType, // For event_perform
 
@@ -379,7 +382,7 @@ namespace UndertaleModLib.Decompiler
 
             function_name = function_name.Replace("color", "colour", StringComparison.InvariantCulture); // Just GameMaker things... both are valid :o
 
-            if(context.GlobalContext.Data?.IsGameMaker2() ?? false)
+            if (context.GlobalContext.Data?.IsGameMaker2() ?? false)
             {
                 // Backgrounds don't exist in GMS2
                 for (int i = 0; i < arguments.Length; i++)
@@ -406,7 +409,7 @@ namespace UndertaleModLib.Decompiler
                 if (overloaded)
                 {
                     // Copy the array to make sure we don't overwrite existing known types
-                    func_types = (AssetIDType[]) func_types.Clone();
+                    func_types = (AssetIDType[])func_types.Clone();
                     AssetIDType scriptArgType;
 
                     for (int i = 0; i < arguments.Length && i < func_types.Length && i < scriptArgs[function_name].Length; i++)
@@ -445,11 +448,11 @@ namespace UndertaleModLib.Decompiler
                         var firstArg = (function.Arguments[0] as Decompiler.ExpressionCast).Argument;
                         if ((firstArg is Decompiler.ExpressionConstant) && firstArg.Type == UndertaleInstruction.DataType.Int16)
                         {
-                            short script_id = (short) (firstArg as Decompiler.ExpressionConstant).Value;
+                            short script_id = (short)(firstArg as Decompiler.ExpressionConstant).Value;
                             if (script_id >= 0 && script_id < context.GlobalContext.Data.Scripts.Count)
                             {
                                 var script = context.GlobalContext.Data.Scripts[script_id];
-                                AssetIDType[] args = new AssetIDType[arguments.Length-1];
+                                AssetIDType[] args = new AssetIDType[arguments.Length - 1];
                                 AnnotateTypesForFunctionCall(script.Name.Content, args, context);
                                 Array.Copy(args, 0, arguments, 1, args.Length);
                                 return true;
@@ -500,7 +503,7 @@ namespace UndertaleModLib.Decompiler
 
         internal static Dictionary<string, AssetIDType> GetTypeOverridesFor(string code_entry_name)
         {
-            lock(builtin_var_overrides)
+            lock (builtin_var_overrides)
             {
                 if (!builtin_var_overrides.ContainsKey(code_entry_name))
                     builtin_var_overrides.Add(code_entry_name, new Dictionary<string, AssetIDType>());
@@ -1532,12 +1535,12 @@ namespace UndertaleModLib.Decompiler
 
                 builtin_vars.Add("input_k", AssetIDType.KeyboardKey);
 
-/*
-                builtin_vars.Add("_pacified", AssetIDType.Boolean);
-                builtin_vars.Add("_spared", AssetIDType.Boolean);
-                builtin_vars.Add("_violenced", AssetIDType.Boolean);
-                builtin_vars.Add("_frozened", AssetIDType.Boolean);
-*/
+                /*
+                                builtin_vars.Add("_pacified", AssetIDType.Boolean);
+                                builtin_vars.Add("_spared", AssetIDType.Boolean);
+                                builtin_vars.Add("_violenced", AssetIDType.Boolean);
+                                builtin_vars.Add("_frozened", AssetIDType.Boolean);
+                */
                 builtin_vars.Add("nitro", AssetIDType.Boolean);
                 builtin_vars.Add("confirm", AssetIDType.Boolean);
                 builtin_vars.Add("attack_succeeded", AssetIDType.Boolean);
