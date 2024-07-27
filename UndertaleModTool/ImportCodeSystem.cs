@@ -323,7 +323,7 @@ namespace UndertaleModTool
                                 // It *needs* to have a valid value, make the user specify one.
                                 List<uint> possible_values = new List<uint>();
                                 possible_values.Add(uint.MaxValue);
-                                methodNumber = (int)ReduceCollisionValue(possible_values);
+                                methodNumber = (int)ReduceCollisionValue(possible_values, codeName);
                             }
                         }
                     }
@@ -364,14 +364,28 @@ namespace UndertaleModTool
                                     // It *needs* to have a valid value, make the user specify one, silly.
                                     List<uint> possible_values = new List<uint>();
                                     possible_values.Add(uint.MaxValue);
-                                    ReassignGUIDs(methodNumberStr, ReduceCollisionValue(possible_values));
+                                    var object_found = false;
+                                    for (var i = 0; i < Data.GameObjects.Count; i++)
+                                    {
+                                        if (Data.GameObjects[i].Name.Content.ToLower() == methodNumberStr)
+                                        {
+                                            ReassignGUIDs(methodNumberStr, (uint)i);
+                                            object_found = true;
+                                            return;
+                                        }
+                                    }
+                                    if (!object_found)
+                                    {
+                                        ReassignGUIDs(methodNumberStr, ReduceCollisionValue(possible_values, codeName));
+                                    }
+
                                 }
                             }
                             else
                             {
                                 // Let's try to get this going
-                                methodNumber = (int)ReduceCollisionValue(GetCollisionValueFromCodeNameGUID(codeName));
-                                ReassignGUIDs(methodNumberStr, ReduceCollisionValue(GetCollisionValueFromCodeNameGUID(codeName)));
+                                methodNumber = (int)ReduceCollisionValue(GetCollisionValueFromCodeNameGUID(codeName), codeName);
+                                ReassignGUIDs(methodNumberStr, ReduceCollisionValue(GetCollisionValueFromCodeNameGUID(codeName), codeName));
                             }
                         }
                     }

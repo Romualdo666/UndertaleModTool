@@ -65,7 +65,7 @@
             <CheckBox Grid.Row="7" Grid.Column="0" Margin="3" Content="" IsChecked="{Binding EnableDarkMode}"/>
             <TextBlock Grid.Row="7" Grid.Column="0" Margin="25 2 2 2" Text="Enable dark mode" ToolTip="Makes the program interface dark. Disabled by default."/>
 
-            <local:ButtonDark Grid.Row="7" Grid.Column="2" Margin="200,0,46,0" Click="GMLSettingsButton_Click" VerticalAlignment="Center" Grid.ColumnSpan="2">GML compiler/decompiler settings</local:ButtonDark>
+            <local:ButtonDark Grid.Row="7" Grid.Column="2" Margin="184,0,27,0" Click="GMLSettingsButton_Click" VerticalAlignment="Center" Grid.ColumnSpan="2">GML compiler/decompiler settings</local:ButtonDark>
 
             <Separator Grid.Row="8" Grid.ColumnSpan="4" Margin="10"/>
 

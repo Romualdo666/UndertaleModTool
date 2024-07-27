@@ -849,7 +849,7 @@ public partial class Program : IScriptInterface
                             // It *needs* to have a valid value, make the user specify one.
                             List<uint> possibleValues = new List<uint>();
                             possibleValues.Add(uint.MaxValue);
-                            methodNumber = (int)ReduceCollisionValue(possibleValues);
+                            methodNumber = (int)ReduceCollisionValue(possibleValues, codeName);
                         }
                     }
                 }
@@ -890,14 +890,14 @@ public partial class Program : IScriptInterface
                                 // It *needs* to have a valid value, make the user specify one, silly.
                                 List<uint> possibleValues = new List<uint>();
                                 possibleValues.Add(uint.MaxValue);
-                                ReassignGUIDs(methodNumberStr, ReduceCollisionValue(possibleValues));
+                                ReassignGUIDs(methodNumberStr, ReduceCollisionValue(possibleValues, codeName));
                             }
                         }
                         else
                         {
                             // Let's try to get this going
-                            methodNumber = (int)ReduceCollisionValue(GetCollisionValueFromCodeNameGUID(codeName));
-                            ReassignGUIDs(methodNumberStr, ReduceCollisionValue(GetCollisionValueFromCodeNameGUID(codeName)));
+                            methodNumber = (int)ReduceCollisionValue(GetCollisionValueFromCodeNameGUID(codeName),codeName);
+                            ReassignGUIDs(methodNumberStr, ReduceCollisionValue(GetCollisionValueFromCodeNameGUID(codeName), codeName));
                         }
                     }
                 }
@@ -1014,7 +1014,7 @@ public partial class Program : IScriptInterface
         }
     }
 
-    public uint ReduceCollisionValue(List<uint> possibleValues)
+    public uint ReduceCollisionValue(List<uint> possibleValues, string MyName)
     {
         this.ScriptMessage("haha dumbass");
         if (possibleValues.Count == 1)
@@ -1028,7 +1028,7 @@ public partial class Program : IScriptInterface
             while (!objFound)
             {
                 string objectIndex = SimpleTextInput("Object could not be found. Please enter it below:",
-                    "Object enter box.", "", false).ToLower();
+                    "Object enter box. ("+MyName+")", "", false).ToLower();
                 for (var i = 0; i < Data.GameObjects.Count; i++)
                 {
                     if (Data.GameObjects[i].Name.Content.ToLower() == objectIndex)
