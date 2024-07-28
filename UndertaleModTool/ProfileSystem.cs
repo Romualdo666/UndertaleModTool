@@ -394,6 +394,7 @@ an issue on GitHub.");
 
                 Directory.CreateDirectory(Path.Combine(ProfilesFolder, ProfileHash, "Main"));
                 Directory.CreateDirectory(Path.Combine(ProfilesFolder, ProfileHash, "Temp"));
+                var Oldname = "";
                 if (!SettingsWindow.ProfileModeEnabled || data.IsYYC())
                 {
                     MD5PreviouslyLoaded = MD5CurrentlyLoaded;
@@ -461,6 +462,7 @@ an issue on GitHub.");
                     }
                     MD5PreviouslyLoaded = MD5CurrentlyLoaded;
                     ProfileHash = Input_text;
+                    Oldname = CurProfileName;
                     CurProfileName = ProfileHash;
                     if (ProfileHash == "")
                     {
@@ -490,7 +492,8 @@ an issue on GitHub.");
                 }
                 if (SettingsWindow.DeleteOldProfileOnSave && copyProfile)
                 {
-                    Directory.Delete(Path.Combine(ProfilesFolder, deleteIfModeActive), true);
+                    //this.ShowMessage(Oldname);
+                    Directory.Delete(Path.Combine(ProfilesFolder, Oldname), true);
                 }
             }
             catch (Exception exc)
