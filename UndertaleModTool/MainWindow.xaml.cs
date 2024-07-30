@@ -378,6 +378,7 @@ namespace UndertaleModTool
                     if (SettingsWindow.ProfileModeEnabled)
                     {
                         var MD5DirName = CurProfileName;
+                        //this.ShowMessage("is this executing");
                         var FileDir = ProfilesFolder;
                         if (Directory.Exists(FileDir + "\\" + MD5DirName + "\\Main"))
                         {
@@ -707,6 +708,7 @@ namespace UndertaleModTool
                             if (SettingsWindow.ProfileModeEnabled)
                             {
                                 var MD5DirName = CurProfileName;
+                                //this.ShowMessage("is this executing2");
                                 var FileDir = ProfilesFolder;
                                 if (Directory.Exists(FileDir + "\\" + MD5DirName + "\\Main"))
                                 {
@@ -738,7 +740,7 @@ namespace UndertaleModTool
             if (dlg.ShowDialog(this) == true)
             {
                 await LoadFile(dlg.FileName, true);
-                if (SettingsWindow.ProfileModeEnabled)
+                /*if (SettingsWindow.ProfileModeEnabled) //// this is causing problems
                 { 
                     var MD5DirName = CurProfileName;
                     var FileDir = ProfilesFolder;
@@ -753,7 +755,7 @@ namespace UndertaleModTool
                             }
                         }
                     }
-                }
+                }*/
                 return true;
             }
             return false;

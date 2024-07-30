@@ -230,6 +230,42 @@ namespace UndertaleModTool
                             MD5CurrentlyLoaded = md5Instance.ComputeHash(stream);
                             MD5PreviouslyLoaded = MD5CurrentlyLoaded;
                             remMD5 = MD5PreviouslyLoaded;
+
+                            String Input_text = "";
+                            if (SettingsWindow.ProfileModeEnabled && SettingsWindow.CustomProfileName == true)
+                                Input_text = SimpleTextInput("Loading Profile, please enter a Profile name.", "(Leaving this blank will name the profile with the data's MD5 hash.)", Input_text, true);
+
+                            if (Input_text == "")
+                            {
+                                ProfileHash = BitConverter.ToString(MD5PreviouslyLoaded).Replace("-", "").ToLowerInvariant();
+                                is_string = false;
+                            }
+                            else
+                            {
+                                byte[] idk = Encoding.ASCII.GetBytes(Input_text);
+                                MD5PreviouslyLoaded = idk;
+                                MD5CurrentlyLoaded = idk;
+
+                                ProfileHash = Input_text;
+                                is_string = true;
+                            }
+                            CurProfileName = ProfileHash;
+                            //this.ShowMessage(CurProfileName);
+                            CurrentProfileName = "- Current Profile: " + "\"" + CurProfileName + "\"";
+                        }
+                    }
+                });
+
+                /*await Task.Run(() =>
+                {
+                    using (var md5Instance = MD5.Create())
+                    {
+                        using (var stream = File.OpenRead(filename))
+                        {
+                            MD5CurrentlyLoaded = md5Instance.ComputeHash(stream);
+                            MD5PreviouslyLoaded = MD5CurrentlyLoaded;
+                            remMD5 = MD5PreviouslyLoaded;
+
                             String Input_text = "";
                             if (SettingsWindow.ProfileModeEnabled && SettingsWindow.CustomProfileName == true)
                                 Input_text = SimpleTextInput("Loading Profile, please enter a Profile name.", "(Leaving this blank will name the profile with the data's MD5 hash.)", Input_text, true);
@@ -250,9 +286,10 @@ namespace UndertaleModTool
                                 is_string = true;
                             }
                             CurrentProfileName = "- Current Profile: " + "\"" + CurProfileName + "\"";
+                            this.ShowMessage(ProfileHash);
                         }
                     }
-                });
+                });*/
 
                 string profDir = Path.Combine(ProfilesFolder, ProfileHash);
                 string profDirTemp = Path.Combine(profDir, "Temp");

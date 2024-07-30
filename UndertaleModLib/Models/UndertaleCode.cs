@@ -1604,20 +1604,17 @@ public class UndertaleCode : UndertaleNamedResource, UndertaleObjectWithBlobs, I
 
         data.GMLCacheChanged?.Add(Name?.Content);
 
-        // done lol
-        if (data.ToolInfo.ProfileMode)
+        //TODO: only do this if profile mode is enabled in the first place
+        try
         {
-            try
-            {
-                // When necessary, write to profile.
-                string tempPath = Path.Combine(data.ToolInfo.AppDataProfiles, data.ToolInfo.CurrentMD5, "Temp", Name?.Content + ".gml");
-                if (data.ToolInfo.ProfileMode || File.Exists(tempPath))
-                    File.WriteAllText(tempPath, gmlCode);
-            }
-            catch (Exception exc)
-            {
-                throw new Exception("Error during writing of GML code to profile:\n" + exc);
-            }
+            // When necessary, write to profile.
+            string tempPath = Path.Combine(data.ToolInfo.AppDataProfiles, data.ToolInfo.CurrentMD5, "Temp", Name?.Content + ".gml");
+            if (data.ToolInfo.ProfileMode || File.Exists(tempPath))
+                File.WriteAllText(tempPath, gmlCode);
+        }
+        catch (Exception exc)
+        {
+            throw new Exception("Error during writing of GML code to profile:\n" + exc);
         }
     }
 
