@@ -72,12 +72,12 @@ public class UndertaleRoom : UndertaleNamedResource, INotifyPropertyChanged, IDi
     /// <summary>
     /// Whether this room is persistant.
     /// </summary>
-    public bool Persistent { get; set; } = false;
+    public bool Persistent { get; set; }
 
     /// <summary>
     /// The background color of this room.
     /// </summary>
-    public uint BackgroundColor { get; set; } = 0;
+    public uint BackgroundColor { get; set; }
 
     /// <summary>
     /// Whether the display buffer should be cleared with Window Color.
@@ -171,7 +171,7 @@ public class UndertaleRoom : UndertaleNamedResource, INotifyPropertyChanged, IDi
     /// Calls <see cref="OnPropertyChanged(string)"/> for <see cref="BGColorLayer"/> in order to update the room background color.<br/>
     /// Only used for GameMaker: Studio 2 rooms.
     /// </summary>
-    public void UpdateBGColorLayer() => OnPropertyChanged("BGColorLayer");
+    public void UpdateBGColorLayer() => OnPropertyChanged(nameof(BGColorLayer));
 
     /// <summary>
     /// Checks whether <see cref="Layers"/> is ordered by <see cref="Layer.LayerDepth"/>.
@@ -237,16 +237,19 @@ public class UndertaleRoom : UndertaleNamedResource, INotifyPropertyChanged, IDi
     {
         get
         {
-            return _layers?.Where(l => l.LayerType is LayerType.Background
-                                       && l.BackgroundData.Sprite is null
-                                       && l.BackgroundData.Color != 0)
-                           .OrderBy(l => l.LayerDepth)
-                           .FirstOrDefault();
+            return (_layers?.Where(l => l.LayerType is LayerType.Background
+                                        && l.BackgroundData.Sprite is null
+                                        && l.BackgroundData.Color != 0))
+                            .MinBy(l => l.LayerDepth);
         }
     }
 
     /// <inheritdoc />
     public event PropertyChangedEventHandler PropertyChanged;
+
+    /// <summary>
+    /// Invoked whenever the effective value of any dependency property has been updated.
+    /// </summary>
     protected void OnPropertyChanged([CallerMemberName] string name = null)
     {
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
@@ -378,7 +381,7 @@ public class UndertaleRoom : UndertaleNamedResource, INotifyPropertyChanged, IDi
                         && layer.InstancesData.InstanceIds[0] > GameObjects[^1].InstanceID)
                     {
                         // Make sure it's not a false positive
-                        uint firstLayerInstID = layer.InstancesData.InstanceIds.OrderBy(x => x).First();
+                        uint firstLayerInstID = layer.InstancesData.InstanceIds.MinBy(x => x);
                         uint lastInstID = GameObjects.OrderBy(x => x.InstanceID).Last().InstanceID;
                         if (firstLayerInstID > lastInstID)
                         {
@@ -407,7 +410,7 @@ public class UndertaleRoom : UndertaleNamedResource, INotifyPropertyChanged, IDi
                                 Debug.WriteLine($"The object instance with ID {id} of a layer (ID {layer.LayerId}) is not found.");
                                 continue;
                             }
-                            
+
                             layer.InstancesData.Instances.Add(GameObjects[foundIndex + 1]);
                         }
                     }
@@ -500,8 +503,8 @@ public class UndertaleRoom : UndertaleNamedResource, INotifyPropertyChanged, IDi
                     tileList = tileList.Concat(layer.AssetsData.LegacyTiles);
                 else if (layer.LayerType == LayerType.Tiles && layer.TilesData.TileData.Length != 0)
                 {
-                    int w = (int) (Width / layer.TilesData.TilesX);
-                    int h = (int) (Height / layer.TilesData.TilesY);
+                    int w = (int)(Width / layer.TilesData.TilesX);
+                    int h = (int)(Height / layer.TilesData.TilesY);
                     tileSizes[new(w, h)] = layer.TilesData.TilesX * layer.TilesData.TilesY;
                 }
             }
@@ -513,7 +516,7 @@ public class UndertaleRoom : UndertaleNamedResource, INotifyPropertyChanged, IDi
         // Loop through each tile and save how many times their sizes are used
         foreach (Tile tile in tileList)
         {
-            Point scale = new((int) tile.Width, (int) tile.Height);
+            Point scale = new((int)tile.Width, (int)tile.Height);
             if (tileSizes.ContainsKey(scale))
                 tileSizes[scale]++;
             else
@@ -1158,7 +1161,7 @@ public class UndertaleRoom : UndertaleNamedResource, INotifyPropertyChanged, IDi
             {
                 _backgroundDefinition.Resource = value;
                 OnPropertyChanged();
-                OnPropertyChanged("ObjectDefinition");
+                OnPropertyChanged(nameof(ObjectDefinition));
             }
         }
 
@@ -1172,7 +1175,7 @@ public class UndertaleRoom : UndertaleNamedResource, INotifyPropertyChanged, IDi
             {
                 _spriteDefinition.Resource = value;
                 OnPropertyChanged();
-                OnPropertyChanged("ObjectDefinition");
+                OnPropertyChanged(nameof(ObjectDefinition));
             }
         }
 
@@ -1413,7 +1416,7 @@ public class UndertaleRoom : UndertaleNamedResource, INotifyPropertyChanged, IDi
             if (TilesData != null)
                 TilesData.ParentLayer = this;
         }
-        public void UpdateZIndex() => OnPropertyChanged("LayerDepth");
+        public void UpdateZIndex() => OnPropertyChanged(nameof(LayerDepth));
 
         /// <inheritdoc />
         public void Serialize(UndertaleWriter writer)
@@ -1598,7 +1601,7 @@ public class UndertaleRoom : UndertaleNamedResource, INotifyPropertyChanged, IDi
                         {
                             Array.Resize(ref _tileData[y], (int)value);
                         }
-                        OnPropertyChanged("TileData");
+                        OnPropertyChanged(nameof(TileData));
                     }
                 }
             }
@@ -1615,7 +1618,7 @@ public class UndertaleRoom : UndertaleNamedResource, INotifyPropertyChanged, IDi
                             if (_tileData[y] == null)
                                 _tileData[y] = new uint[TilesX];
                         }
-                        OnPropertyChanged("TileData");
+                        OnPropertyChanged(nameof(TileData));
                     }
                 }
             }
@@ -1796,7 +1799,7 @@ public class UndertaleRoom : UndertaleNamedResource, INotifyPropertyChanged, IDi
                     tile = reader.ReadUInt32();
 
                     // sanity check: run of 2 empty tiles
-                    if (length != 0x81) 
+                    if (length != 0x81)
                         throw new IOException("Expected 0x81, got 0x" + length.ToString("X2"));
                     if (tile != unchecked((uint)-1))
                         throw new IOException("Expected -1, got " + tile + " (0x" + tile.ToString("X8") + ")");
@@ -2393,7 +2396,7 @@ public class UndertaleRoom : UndertaleNamedResource, INotifyPropertyChanged, IDi
         public static UndertaleString GenerateRandomName(UndertaleData data)
         {
             // The same format as in "GameMaker Studio: 2".
-            return data.Strings.MakeString("graphic_" + ((uint)Random.Shared.Next(-int.MaxValue, int.MaxValue)).ToString("X8"));
+            return data.Strings.MakeString("graphic_" + ((uint)Random.Shared.Next(-Int32.MaxValue, Int32.MaxValue)).ToString("X8"));
         }
 
         /// <inheritdoc />
@@ -2556,7 +2559,7 @@ public class UndertaleRoom : UndertaleNamedResource, INotifyPropertyChanged, IDi
         /// </summary>
         public static UndertaleString GenerateRandomName(UndertaleData data)
         {
-            return data.Strings.MakeString("particle_" + ((uint)Random.Shared.Next(-int.MaxValue, int.MaxValue)).ToString("X8"));
+            return data.Strings.MakeString("particle_" + ((uint)Random.Shared.Next(-Int32.MaxValue, Int32.MaxValue)).ToString("X8"));
         }
 
         /// <inheritdoc />
@@ -2698,6 +2701,6 @@ public static class UndertaleRoomExtensions
 {
     public static T ByInstanceID<T>(this IList<T> list, uint instance) where T : UndertaleRoom.IRoomObject
     {
-        return list.Where((x) => x.InstanceID == instance).FirstOrDefault();
+        return list.FirstOrDefault(x => x.InstanceID == instance);
     }
 }
