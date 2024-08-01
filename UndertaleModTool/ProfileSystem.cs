@@ -62,7 +62,9 @@ namespace UndertaleModTool
 
         public void CrashCheck()
         {
-            try
+            string fileext = Path.GetExtension(FilePath);
+
+            if (fileext != ".dat") try
             {
                 string lastEditedLocation = Path.Combine(ProfilesFolder, "LastEdited.txt");
                 if (Data == null && File.Exists(lastEditedLocation))
@@ -140,7 +142,9 @@ namespace UndertaleModTool
 
         public void ApplyCorrections()
         {
-            try
+            string fileext = Path.GetExtension(FilePath);
+
+            if (fileext != ".dat") try
             {
                 DirectoryCopy(CorrectionsFolder, ProfilesFolder, true);
             }
@@ -178,7 +182,9 @@ namespace UndertaleModTool
 
         public void RevertProfile()
         {
-            try
+            string fileext = Path.GetExtension(FilePath);
+
+            if (fileext != ".dat") try
             {
                 // We need to do this regardless, as the "Temp" folder can still change in non-profile mode.
                 // If we don't, it could cause desynchronization between modes.
@@ -219,7 +225,11 @@ namespace UndertaleModTool
         {
             FileMessageEvent?.Invoke("Calculating MD5 hash...");
 
-            try
+            string fileext = Path.GetExtension(filename);
+
+            //this.ShowMessage(filename);
+
+            if (fileext != ".dat") try
             {
                 await Task.Run(() =>
                 {
@@ -386,7 +396,9 @@ an issue on GitHub.");
         {
             FileMessageEvent?.Invoke("Calculating MD5 hash...");
 
-            try
+            string fileext = Path.GetExtension(filename);
+
+            if (fileext != ".dat") try
             {
                 String Input_text = "";
                 if (SettingsWindow.ProfileModeEnabled == true && SettingsWindow.CustomProfileName == true)

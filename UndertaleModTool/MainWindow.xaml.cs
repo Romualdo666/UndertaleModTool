@@ -377,7 +377,7 @@ namespace UndertaleModTool
                     await LoadFile(arg, true, isLaunch || isSpecialLaunch);
                     if (SettingsWindow.ProfileModeEnabled)
                     {
-                        var MD5DirName = CurProfileName;
+                        /*var MD5DirName = CurProfileName; /////////////// this causes errors
                         //this.ShowMessage("is this executing");
                         var FileDir = ProfilesFolder;
                         if (Directory.Exists(FileDir + "\\" + MD5DirName + "\\Main"))
@@ -390,7 +390,7 @@ namespace UndertaleModTool
                                     ImportCodeFromFile(Files[i], true, true, false, true);
                                 }
                             }
-                        }
+                        }*/
                     }
                 }
                 else if (arg == "deleteTempFolder") // if was launched from UndertaleModToolUpdater
@@ -707,7 +707,7 @@ namespace UndertaleModTool
                             await LoadFile(filepath, true);
                             if (SettingsWindow.ProfileModeEnabled)
                             {
-                                var MD5DirName = CurProfileName;
+                                /*var MD5DirName = CurProfileName; ///// this causes errors
                                 //this.ShowMessage("is this executing2");
                                 var FileDir = ProfilesFolder;
                                 if (Directory.Exists(FileDir + "\\" + MD5DirName + "\\Main"))
@@ -720,7 +720,7 @@ namespace UndertaleModTool
                                             ImportCodeFromFile(Files[i], true, true, false, true);
                                         }
                                     }
-                                }
+                                }*/
                             }
                         }
 
