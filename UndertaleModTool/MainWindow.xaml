@@ -53,6 +53,7 @@
         <CommandBinding Command="{x:Static local:MainWindow.ExecuteSearchCommand}" Executed="Command_ExecuteSearch" />
         <CommandBinding Command="NavigationCommands.BrowseBack" Executed="Command_GoBack" />
         <CommandBinding Command="NavigationCommands.BrowseForward" Executed="Command_GoForward" />
+        <CommandBinding Command="{x:Static local:MainWindow.SearchInCodeCommand}" Executed="Command_SearchInCode"/>
     </Window.CommandBindings>
     <Window.InputBindings>
         <KeyBinding Modifiers="Control" Key="N" Command="New"/>
@@ -69,7 +70,7 @@
         <KeyBinding Gesture="Ctrl+Shift+T" Command="{x:Static local:MainWindow.RestoreClosedTabCommand}"/>
         <KeyBinding Gesture="Ctrl+Tab" Command="{x:Static local:MainWindow.SwitchToNextTabCommand}"/>
         <KeyBinding Gesture="Ctrl+Shift+Tab" Command="{x:Static local:MainWindow.SwitchToPrevTabCommand}"/>
-        <KeyBinding Gesture="Ctrl+Shift+F" Command="{x:Static local:MainWindow.ExecuteSearchCommand}" CommandParameter="Scripts\Builtin Scripts\Search.csx"/>
+        <KeyBinding Gesture="Ctrl+Shift+F" Command="{x:Static local:MainWindow.SearchInCodeCommand}" />
     </Window.InputBindings>
     <Grid>
         <Image Margin="0,0,14,29" gif:ImageBehavior.AnimatedSource="/Resources/spr_flowey_riseanim.gif"  Stretch="None" HorizontalAlignment="Right" VerticalAlignment="Bottom" Cursor="Hand" x:Name="Flowey"/>
@@ -134,7 +135,9 @@
                         </Style>
                     </local:MenuItemDark.Resources>
 
-                    <MenuItem Header="Find unreferenced _assets" x:Name="FindUnreferencedAssetsItem" Click="MenuItem_FindUnreferencedAssets_Click"/>
+                    <MenuItem Header="Search in code" Command="{x:Static local:MainWindow.SearchInCodeCommand}"></MenuItem>
+
+                    <MenuItem Header="Find unreferenced _assets" Name="FindUnreferencedAssetsItem" Click="MenuItem_FindUnreferencedAssets_Click"/>
                     <Separator/>
                     <MenuItem Header="(script links)" FontStyle="Italic" IsEnabled="False"/>
                     <MenuItem Header="Search in _code (&quot;Search.csx&quot;)"

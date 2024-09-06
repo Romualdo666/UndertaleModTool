@@ -77,7 +77,7 @@ namespace UndertaleModTool
         public static RoutedUICommand RestoreClosedTabCommand = new RoutedUICommand("Restore last closed tab", "RestoreClosedTab", typeof(MainWindow));
         public static RoutedUICommand SwitchToNextTabCommand = new RoutedUICommand("Switch to the next tab", "SwitchToNextTab", typeof(MainWindow));
         public static RoutedUICommand SwitchToPrevTabCommand = new RoutedUICommand("Switch to the previous tab", "SwitchToPrevTab", typeof(MainWindow));
-        public static RoutedUICommand ExecuteSearchCommand = new RoutedUICommand("Execute the Search.csx script.", "ExecuteSearch", typeof(MainWindow));
+        public static RoutedUICommand SearchInCodeCommand = new("Search in code", "SearchInCode", typeof(MainWindow));
 
         public ObservableCollection<Tab> Tabs { get; set; } = new();
         public Tab CurrentTab
@@ -1015,6 +1015,12 @@ namespace UndertaleModTool
                 await RunScript(path);
             else
                 this.ShowError("The script file doesn't exist.");
+        }
+
+        private void Command_SearchInCode(object sender, ExecutedRoutedEventArgs e)
+        {
+            SearchInCodeWindow w = new();
+            w.Show();
         }
 
         private void DisposeGameData()
