@@ -1017,10 +1017,15 @@ namespace UndertaleModTool
                 this.ShowError("The script file doesn't exist.");
         }
 
+        private SearchInCodeWindow searchInCodeWindow;
         private void Command_SearchInCode(object sender, ExecutedRoutedEventArgs e)
         {
-            SearchInCodeWindow w = new();
-            w.Show();
+            if (searchInCodeWindow is null)
+            {
+                searchInCodeWindow = new();
+                searchInCodeWindow.Show();
+            }
+            searchInCodeWindow.ActivateAndFocusOnTextBox();
         }
 
         private void DisposeGameData()
