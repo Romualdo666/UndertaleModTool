@@ -127,4 +127,7 @@
   <data name="mus_dance_of_dog" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\mus_dance_of_dog.wav;System.IO.MemoryStream, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
+  <data name="snd_save" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\snd_save.wav;System.IO.MemoryStream, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
 </root>

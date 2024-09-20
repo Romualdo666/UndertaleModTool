@@ -88,5 +88,14 @@ namespace UndertaleModTool.Properties {
                 return ResourceManager.GetStream("mus_dance_of_dog", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.IO.UnmanagedMemoryStream similar to System.IO.MemoryStream.
+        /// </summary>
+        public static System.IO.UnmanagedMemoryStream snd_save {
+            get {
+                return ResourceManager.GetStream("snd_save", resourceCulture);
+            }
+        }
     }
 }

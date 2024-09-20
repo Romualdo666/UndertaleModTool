@@ -47,6 +47,8 @@ using System.Globalization;
 using System.Windows.Controls.Primitives;
 using System.Runtime.CompilerServices;
 using System.Windows.Interop;
+using Microsoft.VisualBasic;
+using NAudio.Wave;
 
 namespace UndertaleModTool
 {
@@ -1281,6 +1283,13 @@ namespace UndertaleModTool
                         // Also make the changes to the profile system.
                         await ProfileSaveEvent(Data, filename);
                         SaveTempToMainProfile();
+
+                        /*SoundPlayer player = new SoundPlayer(Application.GetResourceStream(new Uri(@"pack://application:,,,/Resources/snd_save.wav")).Stream);
+                        player.Play();*/
+
+                        Stream str = Properties.Resources.snd_save;
+                        SoundPlayer player = new SoundPlayer(str);
+                        player.Play();
                     }
                     else
                     {
