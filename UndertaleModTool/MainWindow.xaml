@@ -49,6 +49,7 @@
         <CommandBinding Command="{x:Static local:MainWindow.RestoreClosedTabCommand}" Executed="Command_RestoreClosedTab" />
         <CommandBinding Command="{x:Static local:MainWindow.SwitchToNextTabCommand}" Executed="Command_SwitchToNextTab" />
         <CommandBinding Command="{x:Static local:MainWindow.SwitchToPrevTabCommand}" Executed="Command_SwitchToPrevTab" />
+        <CommandBinding Command="{x:Static local:MainWindow.ExecuteSearchCommand}" Executed="Command_ExecuteSearch" />
         <CommandBinding Command="NavigationCommands.BrowseBack" Executed="Command_GoBack" />
         <CommandBinding Command="NavigationCommands.BrowseForward" Executed="Command_GoForward" />
     </Window.CommandBindings>
@@ -67,6 +68,7 @@
         <KeyBinding Gesture="Ctrl+Shift+T" Command="{x:Static local:MainWindow.RestoreClosedTabCommand}"/>
         <KeyBinding Gesture="Ctrl+Tab" Command="{x:Static local:MainWindow.SwitchToNextTabCommand}"/>
         <KeyBinding Gesture="Ctrl+Shift+Tab" Command="{x:Static local:MainWindow.SwitchToPrevTabCommand}"/>
+        <KeyBinding Gesture="Ctrl+Shift+F" Command="{x:Static local:MainWindow.ExecuteSearchCommand}" CommandParameter="Scripts\Builtin Scripts\Search.csx"/>
     </Window.InputBindings>
     <Grid>
         <Image Margin="0,0,49,29" gif:ImageBehavior.AnimatedSource="/Resources/spr_flowey_riseanim.gif"  Stretch="None" HorizontalAlignment="Right" VerticalAlignment="Bottom" Cursor="Hand" x:Name="Flowey"/>

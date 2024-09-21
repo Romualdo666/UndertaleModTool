@@ -219,7 +219,7 @@ namespace UndertaleModTool
             OverriddenDisasmPos = default;
 
             var floweranim = ((Image)mainWindow.FindName("Flowey"));
-            floweranim.Opacity = 1;
+            //floweranim.Opacity = 1;
 
             var controller = ImageBehavior.GetAnimationController(floweranim);
             controller.Pause();
@@ -227,7 +227,7 @@ namespace UndertaleModTool
             controller.Play();
 
             ((Image)mainWindow.FindName("FloweyLeave")).Opacity = 0;
-            ((Image)mainWindow.FindName("FloweyBubble")).Opacity = 1;
+            //((Image)mainWindow.FindName("FloweyBubble")).Opacity = 1;
         }
 
         private void SearchPanel_LostFocus(object sender, RoutedEventArgs e)

@@ -74,6 +74,8 @@ namespace UndertaleModTool
         public static RoutedUICommand RestoreClosedTabCommand = new RoutedUICommand("Restore last closed tab", "RestoreClosedTab", typeof(MainWindow));
         public static RoutedUICommand SwitchToNextTabCommand = new RoutedUICommand("Switch to the next tab", "SwitchToNextTab", typeof(MainWindow));
         public static RoutedUICommand SwitchToPrevTabCommand = new RoutedUICommand("Switch to the previous tab", "SwitchToPrevTab", typeof(MainWindow));
+        public static RoutedUICommand ExecuteSearchCommand = new RoutedUICommand("Execute the Search.csx script.", "ExecuteSearch", typeof(MainWindow));
+
         public ObservableCollection<Tab> Tabs { get; set; } = new();
         public Tab CurrentTab
         {
@@ -972,6 +974,17 @@ namespace UndertaleModTool
         private void Command_GoForward(object sender, ExecutedRoutedEventArgs e)
         {
             GoForward();
+        }
+        private async void Command_ExecuteSearch(object sender, ExecutedRoutedEventArgs e)
+        {
+            string path = "Scripts\\Builtin Scripts\\Search.csx";
+            if (!File.Exists(path))
+                path = Path.Combine(Program.GetExecutableDirectory(), path);
+
+            if (File.Exists(path))
+                await RunScript(path);
+            else
+                this.ShowError("The script file doesn't exist.");
         }
 
         private void DisposeGameData()
@@ -3411,7 +3424,11 @@ result in loss of work.");
             string idString;
 
             if (foundIndex == -1)
+            {
                 idString = "Howdy!";
+                ((Image)this.FindName("Flowey")).Opacity = 1;
+                ((Image)this.FindName("FloweyBubble")).Opacity = 1;
+            }
             else if (foundIndex == -2)
                 idString = "N/A";
             else
