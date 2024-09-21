@@ -34,7 +34,7 @@ namespace UndertaleModTool
 
             ((Label)this.FindName("VariablesObjectLabel")).Content = ((Label)mainWindow.FindName("ObjectLabel")).Content;
         }
-        private void UndertaleCodeLocalsEditor_Unloaded(object sender, RoutedEventArgs e)
+        private void UndertaleVariablesEditor_Unloaded(object sender, RoutedEventArgs e)
         {
             var floweranim = ((Image)mainWindow.FindName("Flowey"));
             //floweranim.Opacity = 1;
