@@ -210,8 +210,8 @@ namespace UndertaleModTool
         public static string Version = Assembly.GetExecutingAssembly().GetName().Version.ToString();
 #endif
 
-        private static readonly Color darkColor = Color.FromArgb(255, 32, 32, 32);
-        private static readonly Color darkLightColor = Color.FromArgb(255, 48, 48, 48);
+        private static readonly Color darkColor = Color.FromArgb(255, 0, 0, 0);
+        private static readonly Color darkLightColor = Color.FromArgb(255, 2, 2, 2);
         private static readonly Color whiteColor = Color.FromArgb(255, 222, 222, 222);
         private static readonly SolidColorBrush grayTextBrush = new(Color.FromArgb(255, 179, 179, 179));
         private static readonly SolidColorBrush inactiveSelectionBrush = new(Color.FromArgb(255, 212, 212, 212));
@@ -235,6 +235,12 @@ namespace UndertaleModTool
             else
                 _ProfileModeEnabled = false;
             InitializeComponent();
+
+            var floweranim = ((Image)this.FindName("Flowey"));
+
+            /*var animator = AnimationBehavior.GetAnimator(floweranim);
+            animator?.Play();*/
+
             this.DataContext = this;
 
             Highlighted = new DescriptionView("Welcome to UndertaleModTool!", "Open a data.win file to get started, then double click on the items on the left to view them.");
@@ -3405,7 +3411,7 @@ result in loss of work.");
             string idString;
 
             if (foundIndex == -1)
-                idString = "None";
+                idString = "Howdy!";
             else if (foundIndex == -2)
                 idString = "N/A";
             else

@@ -81,6 +81,16 @@ namespace UndertaleModTool.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        public static byte[] _8bitoperator_jve {
+            get {
+                object obj = ResourceManager.GetObject("8bitoperator_jve", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized resource of type System.IO.UnmanagedMemoryStream similar to System.IO.MemoryStream.
         /// </summary>
         public static System.IO.UnmanagedMemoryStream mus_dance_of_dog {
@@ -95,6 +105,56 @@ namespace UndertaleModTool.Properties {
         public static System.IO.UnmanagedMemoryStream snd_save {
             get {
                 return ResourceManager.GetStream("snd_save", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        public static System.Drawing.Bitmap spr_bubble_message {
+            get {
+                object obj = ResourceManager.GetObject("spr_bubble_message", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        public static System.Drawing.Bitmap spr_flowey {
+            get {
+                object obj = ResourceManager.GetObject("spr_flowey", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        public static System.Drawing.Bitmap spr_flowey_big {
+            get {
+                object obj = ResourceManager.GetObject("spr_flowey_big", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        public static System.Drawing.Bitmap spr_flowey_riseanim {
+            get {
+                object obj = ResourceManager.GetObject("spr_flowey_riseanim", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        public static System.Drawing.Bitmap spr_flowey_unriseanim {
+            get {
+                object obj = ResourceManager.GetObject("spr_flowey_unriseanim", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
             }
         }
     }

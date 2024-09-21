@@ -26,6 +26,7 @@ using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
 using System.Windows.Media.TextFormatting;
 using System.Windows.Navigation;
@@ -34,6 +35,7 @@ using UndertaleModLib;
 using UndertaleModLib.Compiler;
 using UndertaleModLib.Decompiler;
 using UndertaleModLib.Models;
+using WpfAnimatedGif;
 using Input = System.Windows.Input;
 
 namespace UndertaleModTool
@@ -68,6 +70,7 @@ namespace UndertaleModTool
         public static (int Line, int Column, double ScrollPos) OverriddenDisasmPos { get; set; }
 
         public static RoutedUICommand Compile = new RoutedUICommand("Compile code", "Compile", typeof(UndertaleCodeEditor));
+        //public static RoutedUICommand Findcode = mainWindow.RunScript("Search.csx)");
 
         private static readonly Dictionary<string, UndertaleNamedResource> NamedObjDict = new();
         private static readonly Dictionary<string, UndertaleNamedResource> ScriptsDict = new();
@@ -84,7 +87,22 @@ namespace UndertaleModTool
 
         public UndertaleCodeEditor()
         {
+            /*var floweranim = ((Image)mainWindow.FindName("Flowey"));
+            floweranim.Opacity = 1;
+
+            var controller = ImageBehavior.GetAnimationController(floweranim);
+            controller.Pause();
+            controller.GotoFrame(controller.FrameCount - 5);
+            controller.Play();*/
+
+
             InitializeComponent();
+
+            ((Image)mainWindow.FindName("Flowey")).Opacity = 0;
+            ((Image)mainWindow.FindName("FloweyLeave")).Opacity = 0;
+            ((Image)mainWindow.FindName("FloweyBubble")).Opacity = 0;
+
+            ((Label)this.FindName("CodeObjectLabel")).Content = ((Label)mainWindow.FindName("ObjectLabel")).Content;
 
             // Decompiled editor styling and functionality
             DecompiledSearchPanel = SearchPanel.Install(DecompiledEditor.TextArea);
@@ -199,6 +217,17 @@ namespace UndertaleModTool
         {
             OverriddenDecompPos = default;
             OverriddenDisasmPos = default;
+
+            var floweranim = ((Image)mainWindow.FindName("Flowey"));
+            floweranim.Opacity = 1;
+
+            var controller = ImageBehavior.GetAnimationController(floweranim);
+            controller.Pause();
+            controller.GotoFrame(controller.FrameCount - 5);
+            controller.Play();
+
+            ((Image)mainWindow.FindName("FloweyLeave")).Opacity = 0;
+            ((Image)mainWindow.FindName("FloweyBubble")).Opacity = 1;
         }
 
         private void SearchPanel_LostFocus(object sender, RoutedEventArgs e)
@@ -332,6 +361,18 @@ namespace UndertaleModTool
             }
             else
                 FillInCodeViewer(true);
+
+            int foundIndex = code is UndertaleResource res ? mainWindow.Data.IndexOf(res, false) : -1;
+            string idString;
+
+            if (foundIndex == -1)
+                idString = "None";
+            else if (foundIndex == -2)
+                idString = "N/A";
+            else
+                idString = Convert.ToString(foundIndex);
+
+            ((Label)this.FindName("CodeObjectLabel")).Content = idString;
         }
 
         public static readonly RoutedEvent CtrlKEvent = EventManager.RegisterRoutedEvent(
