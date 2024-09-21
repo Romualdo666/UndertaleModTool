@@ -148,7 +148,7 @@
                 </local:MenuItemDark>
             </Menu>
             <Grid DockPanel.Dock="Bottom">
-                <local:TextBoxDark x:Name="CommandBox" AcceptsReturn="True" PreviewKeyDown="CommandBox_PreviewKeyDown" Margin="0,0,35,0"/>
+                <local:TextBoxDark x:Name="CommandBox" AcceptsReturn="True" PreviewKeyDown="CommandBox_PreviewKeyDown" Margin="0,0,0,0"/>
                 <Label Content="Howdy!" HorizontalAlignment="Right" VerticalAlignment="Top" VerticalContentAlignment="Top" x:Name="ObjectLabel"
                        ToolTip="This is an ID (index) of the currently open object. It starts from 0."
                        ToolTipService.InitialShowDelay="200" Margin="0,-93,45,0" Foreground="Black"/>
