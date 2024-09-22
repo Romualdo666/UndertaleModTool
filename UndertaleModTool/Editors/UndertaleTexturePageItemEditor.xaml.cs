@@ -29,7 +29,7 @@ namespace UndertaleModTool
             ((System.Windows.Controls.Image)mainWindow.FindName("FloweyLeave")).Opacity = 0;
             ((System.Windows.Controls.Image)mainWindow.FindName("FloweyBubble")).Opacity = 0;
 
-            //((Label)this.FindName("TexutrePagesObjectLabel")).Content = ((Label)mainWindow.FindName("ObjectLabel")).Content;
+            ((Label)this.FindName("TexutrePagesObjectLabel")).Content = ((Label)mainWindow.FindName("ObjectLabel")).Content;
         }
 
         private void Import_Click(object sender, RoutedEventArgs e)
@@ -131,7 +131,7 @@ namespace UndertaleModTool
             else
                 idString = Convert.ToString(foundIndex);
 
-            //((Label)this.FindName("TexutrePagesObjectLabel")).Content = idString;
+            ((Label)this.FindName("TexutrePagesObjectLabel")).Content = idString;
 
             //((Image)mainWindow.FindName("FloweyBubble")).Opacity = 0;
             //((Image)mainWindow.FindName("Flowey")).Opacity = 0;
