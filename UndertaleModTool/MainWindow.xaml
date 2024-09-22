@@ -488,7 +488,7 @@
                     </TreeViewItem>
                 </TreeView>
 
-                <GridSplitter Grid.Column="1" Grid.RowSpan="2" HorizontalAlignment="Center" VerticalAlignment="Stretch" ShowsPreview="True" Width="3"/>
+                <GridSplitter Grid.Column="1" Grid.RowSpan="2" HorizontalAlignment="Center" VerticalAlignment="Stretch" ShowsPreview="True" Width="3" Background="#FFC7C7C7" Opacity="0.25"/>
 
                 <Grid Grid.Column="2" Grid.RowSpan="2">
                     <Grid.RowDefinitions>

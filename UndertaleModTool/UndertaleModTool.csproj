@@ -24,10 +24,12 @@
       <None Remove="Corrections\README.txt" />
       <None Remove="Resources\snd_save.wav" />
       <None Remove="Resources\spr_bubble_message.png" />
+      <None Remove="Resources\spr_bubble_message_left.png" />
       <None Remove="Resources\spr_flowey.png" />
       <None Remove="Resources\spr_flowey_big.png" />
       <None Remove="Resources\spr_flowey_riseanim.gif" />
       <None Remove="Resources\spr_flowey_unriseanim.gif" />
+      <None Remove="Resources\spr_unknown_sprite.png" />
       <None Remove="Resources\tabs_left_button.png" />
       <None Remove="Resources\tabs_right_button.png" />
       <None Remove="Resources\X_Down.png" />
@@ -41,10 +43,12 @@
         </Resource>
         <Resource Include="Resources\snd_save.wav" />
         <Resource Include="Resources\spr_bubble_message.png" />
+        <Resource Include="Resources\spr_bubble_message_left.png" />
         <Resource Include="Resources\spr_flowey.png" />
         <Resource Include="Resources\spr_flowey_big.png" />
         <Resource Include="Resources\spr_flowey_riseanim.gif" />
         <Resource Include="Resources\spr_flowey_unriseanim.gif" />
+        <Resource Include="Resources\spr_unknown_sprite.png" />
         <Resource Include="Resources\tabs_left_button.png" />
         <Resource Include="Resources\tabs_right_button.png" />
         <Resource Include="Resources\X.png" />

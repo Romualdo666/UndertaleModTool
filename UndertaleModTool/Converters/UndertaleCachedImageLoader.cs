@@ -14,6 +14,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Data;
+using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using UndertaleModLib.Models;
@@ -303,7 +304,12 @@ namespace UndertaleModTool
         public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
         {
             if (values.Any(x => x is null))
-                return null;
+            {
+                // here
+                var bitmap = Properties.Resources.spr_unknown_sprite;
+                var bitmapSource = Imaging.CreateBitmapSourceFromHBitmap(bitmap.GetHbitmap(), IntPtr.Zero, Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions());
+                return bitmapSource;
+            }
 
             IList<UndertaleSprite.TextureEntry> textures = values[0] as IList<UndertaleSprite.TextureEntry>;
             if (textures is null)

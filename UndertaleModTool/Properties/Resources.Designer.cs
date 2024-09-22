@@ -121,6 +121,16 @@ namespace UndertaleModTool.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        public static System.Drawing.Bitmap spr_bubble_message_left {
+            get {
+                object obj = ResourceManager.GetObject("spr_bubble_message_left", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         public static System.Drawing.Bitmap spr_flowey {
             get {
                 object obj = ResourceManager.GetObject("spr_flowey", resourceCulture);
@@ -154,6 +164,16 @@ namespace UndertaleModTool.Properties {
         public static System.Drawing.Bitmap spr_flowey_unriseanim {
             get {
                 object obj = ResourceManager.GetObject("spr_flowey_unriseanim", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        public static System.Drawing.Bitmap spr_unknown_sprite {
+            get {
+                object obj = ResourceManager.GetObject("spr_unknown_sprite", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
