@@ -49,6 +49,9 @@ using System.Runtime.CompilerServices;
 using System.Windows.Interop;
 using Microsoft.VisualBasic;
 using NAudio.Wave;
+using WpfAnimatedGif;
+using System.Security.Policy;
+using XamlAnimatedGif;
 
 namespace UndertaleModTool
 {
@@ -1696,6 +1699,35 @@ namespace UndertaleModTool
             {
                 Highlighted = e.NewValue;
             }
+        }
+
+        private void Flowey_MouseDown(object sender, MouseEventArgs e)
+        {
+
+        }
+        private void Flowey_MouseEnter(object sender, MouseEventArgs e)
+        {
+            var flowery = ((Image)this.FindName("Flowey"));
+            var flowery_wink = ((Image)this.FindName("FloweyClickable"));
+            var bubble = ((Image)this.FindName("FloweyBubble"));
+            var flowery_dialogue = (Label)this.FindName("ObjectLabel");
+
+            flowery.Opacity = 0;
+            flowery_wink.Opacity = 1;
+            bubble.Opacity = 1;
+            flowery_dialogue.Opacity = 1;
+        }
+        private void Flowey_MouseLeave(object sender, MouseEventArgs e)
+        {
+            var flowery = ((Image)this.FindName("Flowey"));
+            var flowery_wink = ((Image)this.FindName("FloweyClickable"));
+            var bubble = ((Image)this.FindName("FloweyBubble"));
+            var flowery_dialogue = (Label)this.FindName("ObjectLabel");
+
+            flowery.Opacity = 1;
+            flowery_wink.Opacity = 0;
+            bubble.Opacity = 0;
+            flowery_dialogue.Opacity = 0;
         }
 
         private void MainTree_MouseDoubleClick(object sender, MouseButtonEventArgs e)
@@ -3427,7 +3459,7 @@ result in loss of work.");
             {
                 idString = "Howdy!";
                 ((Image)this.FindName("Flowey")).Opacity = 1;
-                ((Image)this.FindName("FloweyBubble")).Opacity = 1;
+                //((Image)this.FindName("FloweyBubble")).Opacity = 1;
             }
             else if (foundIndex == -2)
                 idString = "N/A";
