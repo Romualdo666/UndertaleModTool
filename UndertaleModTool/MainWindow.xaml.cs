@@ -4123,32 +4123,75 @@ result in loss of work.");
 
         public void ExportProfileFolder()
         {
-            if (CurProfileName != "null")
+            if (CanSave == true)
             {
-                var MD5DirName = CurProfileName;
-                var MD5DirPath = Path.Combine(ProfilesFolder, MD5DirName);
-                var FileDir = "";
-                string[] iwishiwasbetteratnames = FilePath.Split(new char[] { '\\' });
-                var directoriesamt = iwishiwasbetteratnames.Length;
-                for (var i = 0; i < directoriesamt - 1; i++)
+                if (CurProfileName != "null")
                 {
-                    FileDir += iwishiwasbetteratnames[i] + "\\";
+                    var MD5DirName = CurProfileName;
+                    var MD5DirPath = Path.Combine(ProfilesFolder, MD5DirName);
+                    var FileDir = "";
+                    string[] iwishiwasbetteratnames = FilePath.Split(new char[] { '\\' });
+                    var directoriesamt = iwishiwasbetteratnames.Length;
+                    for (var i = 0; i < directoriesamt - 1; i++)
+                    {
+                        FileDir += iwishiwasbetteratnames[i] + "\\";
+                    }
+                    FileDir += "Profiles\\" + MD5DirName;
+                    if (Directory.Exists(FileDir))
+                        Directory.Delete(FileDir, true);
+                    Directory.CreateDirectory(FileDir);
+                    DirectoryCopy(MD5DirPath, FileDir, true);
+                    this.ShowMessage("Done!");
                 }
-                FileDir += "Profiles\\" + MD5DirName;
-                if (Directory.Exists(FileDir))
-                    Directory.Delete(FileDir, true);
-                Directory.CreateDirectory(FileDir);
-                DirectoryCopy(MD5DirPath, FileDir, true);
-                this.ShowMessage("Done!");
+                else
+                {
+                    this.ShowMessage("You have to load a Profile beforehand!");
+                }
             }
             else
-            {
-                this.ShowMessage("You have to load a Profile beforehand!");
-            }
+                this.ShowMessage("You have to open a data.win beforehand!");
         }
         public void ImportProfileFolder()
         {
             if (CanSave == true)
+            {
+                if (CurProfileName != "null")
+                {
+                    var MD5DirName = CurProfileName;
+                    var MD5DirPath = Path.Combine(ProfilesFolder, MD5DirName);
+                    var FileDir = "";
+                    string[] iwishiwasbetteratnames = FilePath.Split(new char[] { '\\' });
+                    var directoriesamt = iwishiwasbetteratnames.Length;
+                    for (var i = 0; i < directoriesamt - 1; i++)
+                    {
+                        FileDir += iwishiwasbetteratnames[i] + "\\";
+                    }
+                    if (Directory.Exists(FileDir))
+                    {
+                        if (Directory.Exists(FileDir + "\\Profiles\\" + MD5DirName + "\\Main"))
+                        {
+                            FileDir += "\\Profiles\\" + MD5DirName;
+
+                            if (Directory.Exists(MD5DirPath))
+                                Directory.Delete(MD5DirPath, true);
+                            Directory.CreateDirectory(MD5DirPath);
+                            DirectoryCopy(FileDir, MD5DirPath, true);
+                            this.ShowMessage("Done!");
+                        }
+                        else
+                            this.ShowMessage("There's no code to import at all.");
+                    }
+                    else
+                        this.ShowMessage("You have to export a Profile folder to your current data.win's path beforehand!");
+                }
+                else
+                {
+                    this.ShowMessage("You have to load a Profile beforehand!");
+                }
+            }
+            else
+                this.ShowMessage("You have to open a data.win beforehand!");
+            /*if (CanSave == true)
             {
                 var MD5DirName = CurProfileName;
                 var FileDir = "";
@@ -4181,7 +4224,7 @@ result in loss of work.");
                     this.ShowMessage("You have to export a Profile folder to your current data.win's path beforehand!");
             }
             else
-                this.ShowMessage("You have to open a data.win beforehand!");
+                this.ShowMessage("You have to open a data.win beforehand!");*/
         }
     }
 
