@@ -856,6 +856,16 @@ namespace UndertaleModTool
 
                 if (SettingsWindow.WarnOnClose)
                 {
+                    ((Image)this.FindName("Flowey")).Opacity = 0;
+
+                    var floweranim = ((Image)this.FindName("FloweyLeave"));
+                        floweranim.Opacity = 1;
+
+                    var controller = ImageBehavior.GetAnimationController(floweranim);
+                        controller.Pause();
+                        controller.GotoFrame(controller.FrameCount - 10);
+                        controller.Play();
+
                     if (this.ShowQuestion("Are you sure you want to quit?") == MessageBoxResult.Yes)
                     {
                         if (this.ShowQuestion("Save changes first?") == MessageBoxResult.Yes)
@@ -887,7 +897,18 @@ namespace UndertaleModTool
                         DestroyUMTLastEdited();
                     }
                     else
+                    {
+                        floweranim.Opacity = 0;
+
+                        var floweranim2 = ((Image)this.FindName("Flowey"));
+                            floweranim2.Opacity = 1;
+
+                        var controller2 = ImageBehavior.GetAnimationController(floweranim2);
+                            controller2.Pause();
+                            controller2.GotoFrame(controller2.FrameCount - 9);
+                            controller2.Play();
                         return;
+                    }
                 }
                 else
                 {
