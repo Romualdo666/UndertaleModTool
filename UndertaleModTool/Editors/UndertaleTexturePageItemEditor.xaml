@@ -70,10 +70,10 @@
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
-            <local:TextBoxDark Grid.Column="0" Margin="46,3,61,3" Text="{Binding BoundingWidth}"/>
-            <local:TextBoxDark Grid.Column="1" Margin="-12,3,120,3" Text="{Binding BoundingHeight}"/>
             <TextBlock Grid.Column="0" Margin="3,3,75,3" Text="Width:"/>
             <TextBlock Grid.Column="1" Margin="-58,3,75,3" Text="Height:"/>
+            <local:TextBoxDark Grid.Column="0" Margin="46,3,61,3" Text="{Binding BoundingWidth}"/>
+            <local:TextBoxDark Grid.Column="1" Margin="-12,3,120,3" Text="{Binding BoundingHeight}"/>
         </Grid>
 
         <TextBlock Grid.Row="3" Grid.Column="0" Margin="3">Texture</TextBlock>
