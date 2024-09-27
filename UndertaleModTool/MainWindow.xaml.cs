@@ -899,17 +899,20 @@ namespace UndertaleModTool
 
                         DestroyUMTLastEdited();
                     }
-                    else if (floweranim.Opacity > 0)
+                    else
                     {
-                        floweranim.Opacity = 0;
+                        if (floweranim.Opacity > 0)
+                        {
+                            floweranim.Opacity = 0;
 
-                        var floweranim2 = ((Image)this.FindName("Flowey"));
+                            var floweranim2 = ((Image)this.FindName("Flowey"));
                             floweranim2.Opacity = 1;
 
-                        var controller2 = ImageBehavior.GetAnimationController(floweranim2);
+                            var controller2 = ImageBehavior.GetAnimationController(floweranim2);
                             controller2.Pause();
                             controller2.GotoFrame(controller2.FrameCount - 9);
                             controller2.Play();
+                        }
                         return;
                     }
                 }
@@ -1317,6 +1320,10 @@ namespace UndertaleModTool
                 {
                     if (SaveSucceeded)
                     {
+                        Stream str = Properties.Resources.snd_save;
+                        SoundPlayer player = new SoundPlayer(str);
+                        player.Play();
+
                         // It saved successfully!
                         // If we're overwriting a previously existing data file, we're going to delete it now.
                         // Then, we're renaming it back to the proper (non-temp) file name.
@@ -1332,10 +1339,6 @@ namespace UndertaleModTool
 
                         /*SoundPlayer player = new SoundPlayer(Application.GetResourceStream(new Uri(@"pack://application:,,,/Resources/snd_save.wav")).Stream);
                         player.Play();*/
-
-                        Stream str = Properties.Resources.snd_save;
-                        SoundPlayer player = new SoundPlayer(str);
-                        player.Play();
                     }
                     else
                     {
@@ -1735,11 +1738,27 @@ namespace UndertaleModTool
             var flowery_wink = ((Image)this.FindName("FloweyClickable"));
             var bubble = ((Image)this.FindName("FloweyBubble"));
             var flowery_dialogue = (Label)this.FindName("ObjectLabel");
+            Thickness margin = flowery.Margin;
 
-            flowery.Opacity = 0;
-            flowery_wink.Opacity = 1;
-            bubble.Opacity = 1;
-            flowery_dialogue.Opacity = 1;
+            if (flowery.Opacity != 0)
+            {
+                flowery.Opacity = 0;
+                flowery_wink.Opacity = 1;
+                bubble.Opacity = 1;
+                flowery_dialogue.Opacity = 1;
+            }
+            else if (margin.Bottom < 999)
+            {
+                margin.Bottom += 999;
+                flowery.Margin = margin;
+
+                Thickness margin_clickable = flowery_wink.Margin;
+                if (margin_clickable.Bottom < 999)
+                {
+                    margin_clickable.Bottom += 999;
+                    flowery_wink.Margin = margin_clickable;
+                }
+            }
         }
         private void Flowey_MouseLeave(object sender, MouseEventArgs e)
         {
@@ -1748,10 +1767,13 @@ namespace UndertaleModTool
             var bubble = ((Image)this.FindName("FloweyBubble"));
             var flowery_dialogue = (Label)this.FindName("ObjectLabel");
 
-            flowery.Opacity = 1;
-            flowery_wink.Opacity = 0;
-            bubble.Opacity = 0;
-            flowery_dialogue.Opacity = 0;
+            if (flowery_wink.Opacity != 0)
+            {
+                flowery.Opacity = 1;
+                flowery_wink.Opacity = 0;
+                bubble.Opacity = 0;
+                flowery_dialogue.Opacity = 0;
+            }
         }
 
         private void MainTree_MouseDoubleClick(object sender, MouseButtonEventArgs e)
@@ -3484,6 +3506,20 @@ result in loss of work.");
                 idString = "Howdy!";
                 ((Image)this.FindName("Flowey")).Opacity = 1;
                 //((Image)this.FindName("FloweyBubble")).Opacity = 1;
+
+                var flowery = ((Image)this.FindName("Flowey"));
+                var flowery_wink = ((Image)this.FindName("FloweyClickable"));
+
+                Thickness margin = flowery.Margin;
+                if (margin.Bottom >= 999)
+                    margin.Bottom -= 999;
+                flowery.Margin = margin;
+
+                Thickness margin_clickable = flowery_wink.Margin;
+                if (margin_clickable.Bottom >= 999)
+                    margin_clickable.Bottom -= 999;
+                flowery_wink.Margin = margin_clickable;
+
             }
             else if (foundIndex == -2)
                 idString = "N/A";
