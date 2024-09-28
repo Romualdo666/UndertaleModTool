@@ -50,7 +50,6 @@
         <CommandBinding Command="{x:Static local:MainWindow.RestoreClosedTabCommand}" Executed="Command_RestoreClosedTab" />
         <CommandBinding Command="{x:Static local:MainWindow.SwitchToNextTabCommand}" Executed="Command_SwitchToNextTab" />
         <CommandBinding Command="{x:Static local:MainWindow.SwitchToPrevTabCommand}" Executed="Command_SwitchToPrevTab" />
-        <CommandBinding Command="{x:Static local:MainWindow.ExecuteSearchCommand}" Executed="Command_ExecuteSearch" />
         <CommandBinding Command="NavigationCommands.BrowseBack" Executed="Command_GoBack" />
         <CommandBinding Command="NavigationCommands.BrowseForward" Executed="Command_GoForward" />
         <CommandBinding Command="{x:Static local:MainWindow.SearchInCodeCommand}" Executed="Command_SearchInCode"/>
