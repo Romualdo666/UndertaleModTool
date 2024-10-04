@@ -459,7 +459,7 @@ namespace UndertaleModTool
                     // Write to profile if necessary.
                     string path = Path.Combine(ProfilesFolder, Data.ToolInfo.CurrentMD5, "Temp", codeName + ".gml");
                     if (File.Exists(path))
-                        File.WriteAllText(path, GetDecompiledText(code));
+                        File.WriteAllText(path, gmlCode);
                 }
                 else
                 {

@@ -4226,10 +4226,32 @@ result in loss of work.");
                         {
                             FileDir += "\\Profiles\\" + MD5DirName;
 
+                            // replace the profile folder to avoid leftover code files (if code was deleted)
+
                             if (Directory.Exists(MD5DirPath))
                                 Directory.Delete(MD5DirPath, true);
                             Directory.CreateDirectory(MD5DirPath);
                             DirectoryCopy(FileDir, MD5DirPath, true);
+
+                            if (Directory.Exists(MD5DirPath + "\\Temp"))
+                                Directory.Delete(MD5DirPath + "\\Temp", true);
+                            Directory.CreateDirectory(MD5DirPath + "\\Temp");
+
+
+                            // apply the code to UTMT
+
+                            string[] Files = Directory.GetFiles(FileDir + "\\Main");
+                            string[] TempFiles = Directory.GetFiles(FileDir + "\\Temp");
+                            for (var i = 0; i < Files.Length; i++)
+                            {
+                                if (Files[i].EndsWith(".gml"))
+                                {
+                                    ImportCodeFromFile(Files[i], true, false, false, true);
+                                    /*for (var j = 0; j < TempFiles.Length; j++)
+                                        File.Copy(Files[i], TempFiles[j], true);*/
+                                }
+                            }
+
                             this.ShowMessage("Done!");
                         }
                         else
