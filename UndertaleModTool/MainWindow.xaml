@@ -403,7 +403,14 @@
                         <TreeViewItem Header="Texture page items" ItemsSource="{Binding TexturePageItems, Converter={StaticResource FilteredViewConverter}}" Visibility="{Binding TexturePageItems, Converter={StaticResource VisibleIfNotNull}}">
                             <TreeViewItem.ItemTemplate>
                                 <HierarchicalDataTemplate DataType="{x:Type undertale:UndertaleTexturePageItem}">
-                                    <TextBlock Text="{Binding .}" />
+                                    <Grid>
+                                        <TextBlock Text="{Binding .}" Margin="22,0,0,0"/>
+                                        <Viewbox Stretch="Uniform" StretchDirection="DownOnly" Width="20" Height="20" HorizontalAlignment="Left">
+                                            <Border>
+                                                <local:UndertaleTexturePageItemDisplay x:Name="ItemDisplay" DisplayBorder="False"/>
+                                            </Border>
+                                        </Viewbox>
+                                    </Grid>
                                 </HierarchicalDataTemplate>
                             </TreeViewItem.ItemTemplate>
                         </TreeViewItem>
