@@ -243,7 +243,7 @@ namespace UndertaleModTool
 
                             String Input_text = "";
                             if (SettingsWindow.ProfileModeEnabled && SettingsWindow.CustomProfileName == true)
-                            { 
+                            {
                                 if (SettingsWindow.RememberProfileName)
                                 {
                                     var MD5DirName = CurProfileName;
@@ -255,15 +255,20 @@ namespace UndertaleModTool
                                     {
                                         FileDir += iwishiwasbetteratnames[i] + "\\";
                                     }
-                                    FileDir += "Profiles\\directory.txt";
+                                    if (File.Exists(FileDir + "Profiles\\directory.txt"))
+                                    { 
+                                        FileDir += "Profiles\\directory.txt";
 
-                                    var GetThisDir = File.ReadAllText(FileDir);
+                                        var GetThisDir = File.ReadAllText(FileDir);
 
-                                    if (File.Exists(GetThisDir))
-                                        Input_text = File.ReadAllText(GetThisDir);
+                                        if (File.Exists(GetThisDir))
+                                            Input_text = File.ReadAllText(GetThisDir);
+                                        else
+                                            Input_text = SimpleTextInput("Loading Profile, please enter a Profile name.", "(Leaving this blank will name the profile with the data's MD5 hash.)", Input_text, true);
+                                        //this.ShowMessage(Input_text);
+                                    }
                                     else
                                         Input_text = SimpleTextInput("Loading Profile, please enter a Profile name.", "(Leaving this blank will name the profile with the data's MD5 hash.)", Input_text, true);
-                                    //this.ShowMessage(Input_text);
                                 }
                                 else
                                     Input_text = SimpleTextInput("Loading Profile, please enter a Profile name.", "(Leaving this blank will name the profile with the data's MD5 hash.)", Input_text, true);
