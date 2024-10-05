@@ -121,6 +121,15 @@ namespace UndertaleModTool
                 Settings.Save();
             }
         }
+        public static bool RememberProfileName
+        {
+            get => Settings.Instance.RememberProfileName;
+            set
+            {
+                Settings.Instance.RememberProfileName = value;
+                Settings.Save();
+            }
+        }
 
         public static bool WarnOnClose
         {

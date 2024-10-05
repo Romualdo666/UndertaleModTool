@@ -1352,6 +1352,26 @@ namespace UndertaleModTool
                         await ProfileSaveEvent(Data, filename);
                         SaveTempToMainProfile();
 
+                        if (SettingsWindow.ProfileModeEnabled && SettingsWindow.CustomProfileName && SettingsWindow.RememberProfileName)
+                        {
+                            var MD5DirName = CurProfileName;
+                            var MD5DirPath = Path.Combine(ProfilesFolder, MD5DirName);
+                            var FileDir = "";
+                            string[] iwishiwasbetteratnames = FilePath.Split(new char[] { '\\' });
+                            var directoriesamt = iwishiwasbetteratnames.Length;
+                            for (var i = 0; i < directoriesamt - 1; i++)
+                            {
+                                FileDir += iwishiwasbetteratnames[i] + "\\";
+                            }
+                            if (Directory.Exists(FileDir))
+                            {
+                                var rememberDir = FileDir + "Profiles\\" + MD5DirName + "\\name.txt";
+                                File.WriteAllText(rememberDir, MD5DirName);
+
+                                File.WriteAllText(FileDir + "Profiles\\" + "\\directory.txt", rememberDir);
+                            }
+                        }
+
                         /*SoundPlayer player = new SoundPlayer(Application.GetResourceStream(new Uri(@"pack://application:,,,/Resources/snd_save.wav")).Stream);
                         player.Play();*/
                     }

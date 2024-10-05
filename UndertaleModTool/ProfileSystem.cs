@@ -243,7 +243,28 @@ namespace UndertaleModTool
 
                             String Input_text = "";
                             if (SettingsWindow.ProfileModeEnabled && SettingsWindow.CustomProfileName == true)
-                                Input_text = SimpleTextInput("Loading Profile, please enter a Profile name.", "(Leaving this blank will name the profile with the data's MD5 hash.)", Input_text, true);
+                            { 
+                                if (SettingsWindow.RememberProfileName)
+                                {
+                                    var MD5DirName = CurProfileName;
+                                    var MD5DirPath = Path.Combine(ProfilesFolder, MD5DirName);
+                                    var FileDir = "";
+                                    string[] iwishiwasbetteratnames = filename.Split(new char[] { '\\' });
+                                    var directoriesamt = iwishiwasbetteratnames.Length;
+                                    for (var i = 0; i < directoriesamt - 1; i++)
+                                    {
+                                        FileDir += iwishiwasbetteratnames[i] + "\\";
+                                    }
+                                    FileDir += "Profiles\\directory.txt";
+
+                                    var GetThisDir = File.ReadAllText(FileDir);
+
+                                    Input_text = File.ReadAllText(GetThisDir);
+                                    //this.ShowMessage(Input_text);
+                                }
+                                else
+                                    Input_text = SimpleTextInput("Loading Profile, please enter a Profile name.", "(Leaving this blank will name the profile with the data's MD5 hash.)", Input_text, true);
+                            }
 
                             if (Input_text == "")
                             {

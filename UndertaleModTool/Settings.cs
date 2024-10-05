@@ -43,6 +43,7 @@ namespace UndertaleModTool
 
         public bool DeleteOldProfileOnSave { get; set; } = false;
         public bool CustomProfileName { get; set; } = false;
+        public bool RememberProfileName { get; set; } = false;
         public bool WarnOnClose { get; set; } = true;
 
         private double _globalGridWidth = 20;
