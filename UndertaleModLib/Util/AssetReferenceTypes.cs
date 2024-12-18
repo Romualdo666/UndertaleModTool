@@ -4,9 +4,6 @@ namespace UndertaleModLib.Util;
 
 public static class AssetReferenceTypes
 {
-    /// <summary>
-    /// Asset types as used in GML code references.
-    /// </summary>
     public enum RefType
     {
         Object,
@@ -25,9 +22,6 @@ public static class AssetReferenceTypes
         RoomInstance
     }
 
-    /// <summary>
-    /// Converts an integer asset type to its <see cref="RefType"/> equivalent, depending on GameMaker version.
-    /// </summary>
     public static RefType ConvertToRefType(UndertaleData data, int type)
     {
         if (data.IsVersionAtLeast(2024, 4))
@@ -72,9 +66,6 @@ public static class AssetReferenceTypes
         };
     }
 
-    /// <summary>
-    /// Converts a <see cref="RefType"/> to its integer equivalent, depending on GameMaker version.
-    /// </summary>
     public static int ConvertFromRefType(UndertaleData data, RefType type)
     {
         if (data.IsVersionAtLeast(2024, 4))

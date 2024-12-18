@@ -1,5 +1,4 @@
-﻿using ImageMagick;
-using System;
+﻿using System;
 using System.ComponentModel;
 using System.Drawing;
 using UndertaleModLib.Util;
@@ -146,25 +145,33 @@ public class UndertaleTexturePageItem : UndertaleNamedResource, INotifyPropertyC
     /// Replaces the current image of this texture page item to hold a new image.
     /// </summary>
     /// <param name="replaceImage">The new image that shall be applied to this texture page item.</param>
-    public void ReplaceTexture(MagickImage replaceImage)
+    /// <param name="disposeImage">Whether to dispose <paramref name="replaceImage"/> afterwards.</param>
+    public void ReplaceTexture(Image replaceImage, bool disposeImage = true)
     {
-        // Resize image to bounds on texture page
-        using IMagickImage<byte> finalImage = TextureWorker.ResizeImage(replaceImage, SourceWidth, SourceHeight);
+        Image finalImage = TextureWorker.ResizeImage(replaceImage, SourceWidth, SourceHeight);
 
-        // Apply the image to the texture page
+        // Apply the image to the TexturePage.
         lock (TexturePage.TextureData)
         {
-            using TextureWorker worker = new();
-            MagickImage embImage = worker.GetEmbeddedTexture(TexturePage);
+            TextureWorker worker = new TextureWorker();
+            Bitmap embImage = worker.GetEmbeddedTexture(TexturePage); // Use SetPixel if needed.
 
-            embImage.Composite(finalImage, SourceX, SourceY, CompositeOperator.Copy);
+            Graphics g = Graphics.FromImage(embImage);
+            g.CompositingMode = System.Drawing.Drawing2D.CompositingMode.SourceCopy;
+            g.DrawImage(finalImage, SourceX, SourceY);
+            g.Dispose();
 
-            // Replace original texture with the new version, in the original texture format
-            TexturePage.TextureData.Image = GMImage.FromMagickImage(embImage)
-                                                   .ConvertToFormat(TexturePage.TextureData.Image.Format);
+            TexturePage.TextureData.TextureBlob = TextureWorker.GetImageBytes(embImage);
+
+            worker.Cleanup();
         }
 
         TargetWidth = (ushort)replaceImage.Width;
         TargetHeight = (ushort)replaceImage.Height;
+
+        // Cleanup.
+        finalImage.Dispose();
+        if (disposeImage)
+            replaceImage.Dispose();
     }
 }

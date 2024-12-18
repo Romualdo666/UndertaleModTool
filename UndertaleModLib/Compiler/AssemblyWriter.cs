@@ -2169,15 +2169,7 @@ namespace UndertaleModLib.Compiler
                                 cw.typeStack.Push(DataType.Variable);
                                 if (notLast)
                                 {
-                                    if (CompileContext.GMS2_3)
-                                    {
-                                        cw.typeStack.Pop();
-                                        cw.Emit(Opcode.PushI, DataType.Int16).Value = (short)-9; // stacktop conversion
-                                    }
-                                    else
-                                    {
-                                        cw.Emit(Opcode.Conv, cw.typeStack.Pop(), DataType.Int32);
-                                    }
+                                    cw.Emit(Opcode.Conv, cw.typeStack.Pop(), DataType.Int32);
                                 }
                                 else
                                     isArray = true;
@@ -2198,15 +2190,7 @@ namespace UndertaleModLib.Compiler
                                 cw.typeStack.Push(DataType.Variable);
                                 if (next + 1 < e.Children.Count)
                                 {
-                                    if (CompileContext.GMS2_3)
-                                    {
-                                        cw.typeStack.Pop();
-                                        cw.Emit(Opcode.PushI, DataType.Int16).Value = (short)-9; // stacktop conversion
-                                    }
-                                    else
-                                    {
-                                        cw.Emit(Opcode.Conv, cw.typeStack.Pop(), DataType.Int32);
-                                    }
+                                    cw.Emit(Opcode.Conv, cw.typeStack.Pop(), DataType.Int32);
                                 }
                             }
                         }
@@ -2480,18 +2464,7 @@ namespace UndertaleModLib.Compiler
                                 VarType = s.Children[next].Children.Count != 0 ? VariableType.Array : VariableType.StackTop
                             });
                             if (next + 1 < s.Children.Count)
-                            {
-                                if (CompileContext.GMS2_3)
-                                {
-                                    cw.typeStack.Pop();
-                                    cw.Emit(Opcode.PushI, DataType.Int16).Value = (short)-9; // stacktop conversion
-                                    cw.typeStack.Push(DataType.Int32);
-                                }
-                                else
-                                {
-                                    cw.Emit(Opcode.Conv, DataType.Variable, DataType.Int32);
-                                }
-                            }
+                                cw.Emit(Opcode.Conv, DataType.Variable, DataType.Int32);
                         }
                         if (!skip)
                             cw.typeStack.Pop();

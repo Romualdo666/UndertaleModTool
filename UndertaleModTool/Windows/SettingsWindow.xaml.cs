@@ -247,12 +247,6 @@ namespace UndertaleModTool
             set => UpdateAppButton.IsEnabled = value;
         }
 
-#if DEBUG
-        public static Visibility UpdaterButtonVisibility => Visibility.Visible;
-#else
-        public static Visibility UpdaterButtonVisibility => Visibility.Hidden;
-#endif
-
         public SettingsWindow()
         {
             InitializeComponent();

@@ -1168,7 +1168,7 @@ namespace UndertaleModLib
 
                     reader.Position += 32;
                     int effectCount = reader.ReadInt32();
-                    reader.Position += (uint)effectCount * 12 + 4;
+                    reader.Position += effectCount * 12 + 4;
 
                     int tileMapWidth = reader.ReadInt32();
                     int tileMapHeight = reader.ReadInt32();
@@ -1503,8 +1503,8 @@ namespace UndertaleModLib
                     reader.Position = positionToReturn + 4 + (i * 4);
                     reader.AbsPosition = reader.ReadUInt32() + 12; // Go to texture, at an offset
                     reader.AbsPosition = reader.ReadUInt32(); // Go to texture data
-                    ReadOnlySpan<byte> header = reader.ReadBytes(4);
-                    if (!header.SequenceEqual(GMImage.MagicBz2Qoi))
+                    byte[] header = reader.ReadBytes(4);
+                    if (!header.SequenceEqual(UndertaleEmbeddedTexture.TexData.QOIAndBZip2Header))
                     {
                         // Nothing useful, check the next texture
                         continue;
@@ -1547,6 +1547,10 @@ namespace UndertaleModLib
             // texture blobs
             if (List.Count > 0)
             {
+                // Compressed size can't be bigger than maximum decompressed size
+                int maxSize = List.Select(x => x.TextureData.TextureBlob?.Length ?? 0).Max();
+                UndertaleEmbeddedTexture.TexData.InitSharedStream(maxSize);
+
                 bool anythingUsesQoi = false;
                 foreach (var tex in List)
                 {
@@ -1561,7 +1565,8 @@ namespace UndertaleModLib
                 if (anythingUsesQoi)
                 {
                     // Calculate maximum size of QOI converter buffer
-                    int maxSize = (List.Max(x => x.TextureData.Width * x.TextureData.Height) * QoiConverter.MaxChunkSize) + QoiConverter.HeaderSize;
+                    maxSize = List.Select(x => x.TextureData.Width * x.TextureData.Height).Max()
+                              * QoiConverter.MaxChunkSize + QoiConverter.HeaderSize + (writer.undertaleData.IsVersionAtLeast(2022, 3) ? 0 : 4);
                     QoiConverter.InitSharedBuffer(maxSize);
                 }
             }
@@ -1626,8 +1631,6 @@ namespace UndertaleModLib
 
         internal override void UnserializeChunk(UndertaleReader reader)
         {
-            long startPosition = reader.AbsPosition;
-
             if (!checkedFor2022_3)
                 CheckFor2022_3And5(reader);
 
@@ -1641,35 +1644,6 @@ namespace UndertaleModLib
             for (int index = 0; index < List.Count; index++)
             {
                 UndertaleEmbeddedTexture obj = List[index];
-
-                if (!obj.TextureExternal)
-                {
-                    // Calculate maximum end stream position for this blob
-                    int searchIndex = index + 1;
-                    int maxEndOfStreamPosition = -1;
-                    while (searchIndex < List.Count)
-                    {
-                        UndertaleEmbeddedTexture searchObj = List[searchIndex];
-
-                        if (searchObj.TextureExternal)
-                        {
-                            // Skip this texture, as it's external
-                            searchIndex++;
-                            continue;
-                        }
-
-                        // Use start address of this blob
-                        maxEndOfStreamPosition = (int)reader.GetOffsetMapRev()[searchObj.TextureData];
-                        break;
-                    }
-
-                    if (maxEndOfStreamPosition == -1)
-                    {
-                        // At end of list, so just use the end of the chunk
-                        maxEndOfStreamPosition = (int)(startPosition + Length);
-                    }
-                    obj.TextureData.SetMaxEndOfStreamPosition(maxEndOfStreamPosition);
-                }
 
                 obj.UnserializeBlob(reader);
                 obj.Name = new UndertaleString("Texture " + index.ToString());

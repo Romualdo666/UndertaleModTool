@@ -31,7 +31,7 @@ jobs:
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: 8.0.x
+        dotnet-version: 6.0.x
     - name: Restore dependencies
       run: dotnet restore UndertaleModCli
     - name: Build
@@ -42,7 +42,6 @@ jobs:
       run: |
         cp ./README.md ./CLI-${{ matrix.os }}/
         cp ./LICENSE.txt ./CLI-${{ matrix.os }}/
-        cp -r ./UndertaleModLib/GameSpecificData/ ./CLI-${{ matrix.os }}/GameSpecificData/
     - name: Upload ${{ matrix.os }} CLI
       uses: actions/upload-artifact@v4
       with:

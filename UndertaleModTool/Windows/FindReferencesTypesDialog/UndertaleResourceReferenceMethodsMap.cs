@@ -560,6 +560,15 @@ namespace UndertaleModTool.Windows
                                     outDict["Game options constants"] = new object[] { new GeneralInfoEditor(data.GeneralInfo, data.Options, data.Language) };
                             }
 
+                            if (types.Contains(typeof(UndertaleLanguage)))
+                            {
+                                bool langsMatches = data.Language.EntryIDs.Contains(obj)
+                                                    || data.Language.Languages.Any(x => x.Name == obj || x.Region == obj
+                                                                                        || x.Entries.Contains(obj));
+                                if (langsMatches)
+                                    outDict["Languages"] = new object[] { new GeneralInfoEditor(data.GeneralInfo, data.Options, data.Language) };
+                            }
+
                             if (types.Contains(typeof(UndertalePath)))
                             {
                                 var paths = data.Paths.Where(x => x.Name == obj);
@@ -618,28 +627,6 @@ namespace UndertaleModTool.Windows
                             var codeLocals = data.CodeLocals.Where(x => x.Name == obj || x.Locals.Any(l => l.Name == obj));
                             if (codeLocals.Any())
                                 return new() { { "Code locals", checkOne ? codeLocals.ToEmptyArray() : codeLocals.ToArray() } };
-                            else
-                                return null;
-                        }
-                    },
-                    new PredicateForVersion()
-                    {
-                        // Bytecode version 16
-                        Version = (16, uint.MaxValue, uint.MaxValue),
-                        Predicate = (objSrc, types, checkOne) =>
-                        {
-                            if (!types.Contains(typeof(UndertaleLanguage)))
-                                return null;
-
-                            if (objSrc is not UndertaleString obj)
-                                return null;
-
-                            bool langsMatches = data.Language.EntryIDs.Contains(obj)
-                                                || data.Language.Languages.Any(x => x.Name == obj || x.Region == obj
-                                                                                    || x.Entries.Contains(obj));
-
-                            if (langsMatches)
-                                return new() { { "Languages",  new object[] { new GeneralInfoEditor(data.GeneralInfo, data.Options, data.Language) } } };
                             else
                                 return null;
                         }
@@ -1511,42 +1498,39 @@ namespace UndertaleModTool.Windows
                 mainWindow.SetProgressBar(null, "Assets", 0, assets.Count);
                 mainWindow.StartProgressBarUpdater();
 
+                var assetsPart = Partitioner.Create(0, assets.Count);
+
                 List<Dictionary<string, List<object>>> dicts = new();
 
-                if (assets.Count > 0) // A Partitioner can't be created on an empty list.
+                await Task.Run(() =>
                 {
-                    var assetsPart = Partitioner.Create(0, assets.Count);
-
-                    await Task.Run(() =>
+                    Parallel.ForEach(assetsPart, (range) =>
                     {
-                        Parallel.ForEach(assetsPart, (range) =>
+                        var resultDict = new Dictionary<string, List<object>>();
+
+                        for (int i = range.Item1; i < range.Item2; i++)
                         {
-                            var resultDict = new Dictionary<string, List<object>>();
-
-                            for (int i = range.Item1; i < range.Item2; i++)
+                            var asset = assets[i];
+                            var assetReferences = GetReferencesOfObject(asset.Item1, data,
+                                                                        new HashSetTypesOverride(true, data.Code is null), true);
+                            if (assetReferences is null)
                             {
-                                var asset = assets[i];
-                                var assetReferences = GetReferencesOfObject(asset.Item1, data,
-                                                                            new HashSetTypesOverride(true, data.Code is null), true);
-                                if (assetReferences is null)
+                                if (resultDict.TryGetValue(asset.Item2, out var list))
                                 {
-                                    if (resultDict.TryGetValue(asset.Item2, out var list))
-                                    {
-                                        list.Add(asset.Item1);
-                                    }
-                                    else
-                                    {
-                                        resultDict[asset.Item2] = new() { asset.Item1 };
-                                    }
+                                    list.Add(asset.Item1);
                                 }
-
-                                mainWindow.IncrementProgressParallel();
+                                else
+                                {
+                                    resultDict[asset.Item2] = new() { asset.Item1 };
+                                }
                             }
 
-                            dicts.Add(resultDict);
-                        });
+                            mainWindow.IncrementProgressParallel();
+                        }
+
+                        dicts.Add(resultDict);
                     });
-                }
+                });
 
                 Dictionary<string, int> outArrSizes = new();
                 foreach (var dict in dicts)
@@ -1579,17 +1563,23 @@ namespace UndertaleModTool.Windows
                         }
                     }
                 }
-            }
-            finally
-            {
+
                 await mainWindow.StopProgressBarUpdater();
                 mainWindow.HideProgressBar();
-
+            }
+            catch
+            {
                 mainWindow.IsEnabled = true;
                 stringReferences = null;
                 funcReferences = null;
                 variReferences = null;
+
+                throw;
             }
+            mainWindow.IsEnabled = true;
+            stringReferences = null;
+            funcReferences = null;
+            variReferences = null;
 
             if (outDict.Count == 0)
                 return null;

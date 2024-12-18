@@ -52,7 +52,6 @@ using NAudio.Wave;
 using WpfAnimatedGif;
 using System.Security.Policy;
 using XamlAnimatedGif;
-using System.Windows.Media.Imaging;
 
 namespace UndertaleModTool
 {
@@ -109,9 +108,6 @@ namespace UndertaleModTool
         public Visibility IsExtProductIDEligible => (((Data?.GeneralInfo?.Major ?? 0) >= 2) || (((Data?.GeneralInfo?.Major ?? 0) == 1) && (((Data?.GeneralInfo?.Build ?? 0) >= 1773) || ((Data?.GeneralInfo?.Build ?? 0) == 1539)))) ? Visibility.Visible : Visibility.Collapsed;
 
         public List<Tab> ClosedTabsHistory { get; } = new();
-
-        private List<(GMImage, WeakReference<BitmapSource>)> _bitmapSourceLookup { get; } = new();
-        private object _bitmapSourceLookupLock = new();
 
         public bool CanSave { get; set; }
         public bool CanSafelySave = false;
@@ -274,7 +270,6 @@ namespace UndertaleModTool
                                                 GetType().GetTypeInfo().Assembly,
                                                 typeof(JsonConvert).GetTypeInfo().Assembly,
                                                 typeof(System.Text.RegularExpressions.Regex).GetTypeInfo().Assembly,
-                                                typeof(ImageMagick.MagickImage).GetTypeInfo().Assembly,
                                                 typeof(Underanalyzer.Decompiler.DecompileContext).Assembly)
                                 .WithEmitDebugInformation(true); //when script throws an exception, add a exception location (line number)
             });
@@ -283,46 +278,6 @@ namespace UndertaleModTool
             resources["CustomTextBrush"] = SystemColors.ControlTextBrush;
             resources[SystemColors.GrayTextBrushKey] = grayTextBrush;
             resources[SystemColors.InactiveSelectionHighlightBrushKey] = inactiveSelectionBrush;
-        }
-
-        /// <summary>
-        /// Returns a <see cref="BitmapSource"/> instance for the given <see cref="GMImage"/>.
-        /// If a previously-created instance has not yet been garbage collected, this will return that instance.
-        /// </summary>
-        public BitmapSource GetBitmapSourceForImage(GMImage image)
-        {
-            lock (_bitmapSourceLookupLock)
-            {
-                // Look through entire list, clearing out old weak references, and potentially finding our desired source
-                BitmapSource foundSource = null;
-                for (int i = _bitmapSourceLookup.Count - 1; i >= 0; i--)
-                {
-                    (GMImage imageKey, WeakReference<BitmapSource> referenceVal) = _bitmapSourceLookup[i];
-                    if (!referenceVal.TryGetTarget(out BitmapSource source))
-                    {
-                        // Clear out old weak reference
-                        _bitmapSourceLookup.RemoveAt(i);
-                    }
-                    else if (imageKey == image)
-                    {
-                        // Found our source, store it to return later
-                        foundSource = source;
-                    }
-                }
-
-                // If we found our source, return it
-                if (foundSource is not null)
-                {
-                    return foundSource;
-                }
-
-                // If no source was found, then create a new one
-                byte[] pixelData = image.ConvertToRawBgra().ToSpan().ToArray();
-                BitmapSource bitmap = BitmapSource.Create(image.Width, image.Height, 96, 96, PixelFormats.Bgra32, null, pixelData, image.Width * 4);
-                bitmap.Freeze();
-                _bitmapSourceLookup.Add((image, new WeakReference<BitmapSource>(bitmap)));
-                return bitmap;
-            }
         }
 
         private void SetIDString(string str)
@@ -964,18 +919,18 @@ namespace UndertaleModTool
                 else
                 {
                     RevertProfile();
+                    DestroyUMTLastEdited();
                 }
 
-                DestroyUMTLastEdited();
-
-                if (SettingsWindow.UseGMLCache && Data?.GMLCache?.Count > 0 && !Data.GMLCacheWasSaved && Data.GMLCacheIsReady && this.ShowQuestion("Save unedited code cache?") == MessageBoxResult.Yes)
-                    await SaveGMLCache(FilePath, save);
+                if (SettingsWindow.UseGMLCache && Data?.GMLCache?.Count > 0 && !Data.GMLCacheWasSaved && Data.GMLCacheIsReady)
+                    if (this.ShowQuestion("Save unedited code cache?") == MessageBoxResult.Yes)
+                        await SaveGMLCache(FilePath, save);
 
                 CloseOtherWindows();
 
                 IsAppClosed = true;
 
-                Closing -= DataWindow_Closing; // Disable "on window closed" event handler (prevent recursion)
+                Closing -= DataWindow_Closing; //disable "on window closed" event handler (prevent recursion)
                 _ = Task.Run(() => Dispatcher.Invoke(Close));
             }
         }
@@ -1111,8 +1066,6 @@ namespace UndertaleModTool
             Highlighted = new DescriptionView("Welcome to UndertaleModTool!", "Double click on the items on the left to view them!");
             OpenInTab(Highlighted);
 
-            GameSpecificResolver.BaseDirectory = ExePath;
-
             Task t = Task.Run(() =>
             {
                 bool hadWarnings = false;
@@ -1134,6 +1087,8 @@ namespace UndertaleModTool
                             FileMessageEvent?.Invoke(message);
                         }, onlyGeneralInfo);
                     }
+
+                    UndertaleEmbeddedTexture.TexData.ClearSharedStream();
                 }
                 catch (Exception e)
                 {
@@ -1269,6 +1224,7 @@ namespace UndertaleModTool
                         });
                     }
 
+                    UndertaleEmbeddedTexture.TexData.ClearSharedStream();
                     QoiConverter.ClearSharedBuffer();
 
                     if (debugMode != DebugDataDialog.DebugDataMode.NoDebug)
@@ -2104,17 +2060,7 @@ namespace UndertaleModTool
                 name = StringTitleConverter.Instance.Convert(str.Content, null, null, null) as string;
 
             if (name is not null)
-            {
-                try
-                {
-                    Clipboard.SetText(name);
-                }
-                catch (Exception ex)
-                {
-                    this.ShowError("Can't copy the item name to clipboard due to this error:\n" +
-                                   ex.Message + ".\nYou probably should try again.");
-                }
-            }
+                Clipboard.SetText(name);
             else
                 this.ShowWarning("Item name is null.");
         }
@@ -2748,23 +2694,23 @@ namespace UndertaleModTool
             }
         }
 
-        public string ProcessException(in Exception exc)
+        public string ProcessException(in Exception exc, in string scriptText)
         {
-            // Collect all original trace lines that we want to parse
+            List<int> excLineNums = new();
+            string excText = string.Empty;
             List<string> traceLines = new();
             Dictionary<string, int> exTypesDict = null;
+
             if (exc is AggregateException)
             {
                 List<string> exTypes = new();
 
-                // Collect trace lines of inner exceptions, and track their exception type names
                 foreach (Exception ex in (exc as AggregateException).InnerExceptions)
                 {
                     traceLines.AddRange(ex.StackTrace.Split(Environment.NewLine));
                     exTypes.Add(ex.GetType().FullName);
                 }
 
-                // Create a mapping of each exception type to the number of its occurrences
                 if (exTypes.Count > 1)
                 {
                     exTypesDict = exTypes.GroupBy(x => x)
@@ -2775,35 +2721,23 @@ namespace UndertaleModTool
             }
             else if (exc.InnerException is not null)
             {
-                // Collect trace lines of single inner exception
                 traceLines.AddRange(exc.InnerException.StackTrace.Split(Environment.NewLine));
             }
+
             traceLines.AddRange(exc.StackTrace.Split(Environment.NewLine));
 
-            // Iterate over all lines in the stack trace, finding their line numbers and file names
-            List<(string SourceFile, int LineNum)> loadedScriptLineNums = new();
-            int expectedNumScriptTraceLines = 0;
             try
             {
                 foreach (string traceLine in traceLines)
                 {
-                    // Only handle trace lines that come from a script
-                    if (traceLine.TrimStart()[..13] == "at Submission") 
+                    if (traceLine.TrimStart()[..13] == "at Submission") // only stack trace lines from the script
                     {
-                        // Add to total count of expected script trace lines
-                        expectedNumScriptTraceLines++;
-
-                        // Get full path of the script file, within the line
-                        string sourceFile = Regex.Match(traceLine, @"(?<=in ).*\.csx(?=:line \d+)").Value;
-                        if (!File.Exists(sourceFile))
-                            continue;
-
-                        // Try to find line number from the line
-                        const string pattern = ":line ";
-                        int linePos = traceLine.IndexOf(pattern);
-                        if (linePos > 0 && int.TryParse(traceLine[(linePos + pattern.Length)..], out int lineNum))
+                        int linePos = traceLine.IndexOf(":line ") + 6;  // ":line ".Length = 6
+                        if (linePos != (-1 + 6))
                         {
-                            loadedScriptLineNums.Add((sourceFile, lineNum));
+                            int lineNum = Convert.ToInt32(traceLine[linePos..]);
+                            if (!excLineNums.Contains(lineNum))
+                                excLineNums.Add(lineNum);
                         }
                     }
                 }
@@ -2814,57 +2748,22 @@ namespace UndertaleModTool
 
                 int endOfPrevStack = excString.IndexOf("--- End of stack trace from previous location ---");
                 if (endOfPrevStack != -1)
-                {
-                    // Keep only stack trace of the script
-                    excString = excString[..endOfPrevStack];
-                }
+                    excString = excString[..endOfPrevStack]; //keep only stack trace of the script
 
                 return $"An error occurred while processing the exception text.\nError message - \"{e.Message}\"\nThe unprocessed text is below.\n\n" + excString;
             }
 
-            // Generate final exception text to show.
-            // If we found the expected number of script trace lines, then use them; otherwise, use the regular exception text.
-            string excText;
-            if (loadedScriptLineNums.Count == expectedNumScriptTraceLines)
-            {                
-                // Read the code for the files to know what the code line associated with the stack trace is
-                Dictionary<string, List<string>> scriptsCode = new();
-                foreach ((string sourceFile, int _) in loadedScriptLineNums)
-                {
-                    if (!scriptsCode.ContainsKey(sourceFile))
-                    {
-                        string scriptCode = null;
-                        try
-                        {
-                            scriptCode = File.ReadAllText(sourceFile, Encoding.UTF8);
-                        }
-                        catch (Exception e)
-                        {
-                            string excString = exc.ToString();
-
-                            return $"An error occurred while processing the exception text.\nError message - \"{e.Message}\"\nThe unprocessed text is below.\n\n" + excString;
-                        }
-                        scriptsCode.Add(sourceFile, scriptCode.Split('\n').ToList());
-                    }
-                }
-
-                // Generate custom stack trace
-                string excLines = string.Join('\n', loadedScriptLineNums.Select(pair =>
-                {
-                    string scriptName = Path.GetFileName(pair.SourceFile);
-                    string scriptLine = scriptsCode[pair.SourceFile][pair.LineNum - 1]; // - 1 because line numbers start from 1
-                    return $"Line {pair.LineNum} in script {scriptName}: {scriptLine}"; 
-                }));
-
+            if (excLineNums.Count > 0) //if line number(s) is found
+            {
+                string[] scriptLines = scriptText.Split('\n');
+                string excLines = string.Join('\n', excLineNums.Select(n => $"Line {n}: {scriptLines[n].TrimStart(new char[] { '\t', ' ' })}"));
                 if (exTypesDict is not null)
                 {
                     string exTypesStr = string.Join(",\n", exTypesDict.Select(x => $"{x.Key}{((x.Value > 1) ? " (x" + x.Value + ")" : string.Empty)}"));
                     excText = $"{exc.GetType().FullName}: One on more errors occured:\n{exTypesStr}\n\nThe current stacktrace:\n{excLines}";
                 }
                 else
-                {
                     excText = $"{exc.GetType().FullName}: {exc.Message}\n\nThe current stacktrace:\n{excLines}";
-                }
             }
             else
             {
@@ -2872,10 +2771,7 @@ namespace UndertaleModTool
 
                 int endOfPrevStack = excString.IndexOf("--- End of stack trace from previous location ---");
                 if (endOfPrevStack != -1)
-                {
-                    // Keep only stack trace of the script
-                    excString = excString[..endOfPrevStack];
-                }
+                    excString = excString[..endOfPrevStack]; //keep only stack trace of the script
 
                 excText = excString;
             }
@@ -2908,7 +2804,8 @@ namespace UndertaleModTool
 
         private async Task RunScriptNow(string path)
         {
-            string scriptText = $"#line 1 \"{path}\"\n" + File.ReadAllText(path, Encoding.UTF8);
+            string scriptText = $"#line 1 \"{path}\"\n" + File.ReadAllText(path);
+            Debug.WriteLine(path);
 
             Dispatcher.Invoke(() => CommandBox.Text = "Running " + Path.GetFileName(path) + " ...");
             try
@@ -2918,7 +2815,7 @@ namespace UndertaleModTool
 
                 ScriptPath = path;
 
-                object result = await CSharpScript.EvaluateAsync(scriptText, scriptOptions.WithFilePath(path).WithFileEncoding(Encoding.UTF8), this, typeof(IScriptInterface));
+                object result = await CSharpScript.EvaluateAsync(scriptText, scriptOptions, this, typeof(IScriptInterface));
 
                 if (FinishedMessageEnabled)
                 {
@@ -2944,7 +2841,7 @@ namespace UndertaleModTool
                 string excString = string.Empty;
 
                 if (!isScriptException)
-                    excString = ProcessException(in exc);
+                    excString = ProcessException(in exc, in scriptText);
 
                 await StopProgressBarUpdater();
 
@@ -3309,8 +3206,6 @@ namespace UndertaleModTool
             string tempFolder = Path.Combine(Path.GetTempPath(), "UndertaleModTool");
             Directory.CreateDirectory(tempFolder); // We're about to download, so make sure the download dir actually exists
 
-            string downloadOutput = Path.Combine(tempFolder, "Update.zip.zip");
-
             // It's time to download; let's use a cool progress bar
             scriptDialog = new("Downloading", "Downloading new version...")
             {
@@ -3320,129 +3215,135 @@ namespace UndertaleModTool
             };
             SetProgressBar();
 
-            try
+            using (WebClient webClient = new())
             {
-                _ = Task.Run(async () =>
+                bool end = false;
+                bool ended = false;
+                string downloaded = "0.00";
+
+                webClient.DownloadProgressChanged += new DownloadProgressChangedEventHandler((sender, e) =>
                 {
-                    using (HttpClient httpClient = new() { Timeout = TimeSpan.FromMinutes(5) })
+                    if (!end)
+                        downloaded = (e.BytesReceived / bytesToMB).ToString("F2", CultureInfo.InvariantCulture);
+                });
+                webClient.DownloadFileCompleted += new AsyncCompletedEventHandler((sender, e) =>
+                {
+                    end = true;
+
+                    HideProgressBar();
+                    _ = Task.Run(() =>
                     {
-                        // Read HTTP response
-                        using (HttpResponseMessage response = await httpClient.GetAsync(new Uri(downloadUrl), HttpCompletionOption.ResponseHeadersRead))
+                        // wait until progress bar updater loop is finished
+                        while (!ended)
+                            Thread.Sleep(100);
+
+                        scriptDialog = null;
+                    });
+
+                    if (e.Error is not null)
+                    {
+                        string errMsg;
+
+                        if (e.Error.InnerException?.InnerException is Exception ex)
                         {
-                            // Read header
-                            response.EnsureSuccessStatusCode();
-                            long totalBytes = response.Content.Headers.ContentLength ?? throw new Exception("Missing content length");
-
-                            // Start reading content
-                            using Stream contentStream = await response.Content.ReadAsStreamAsync();
-                            const int downloadBufferSize = 8192;
-                            byte[] downloadBuffer = new byte[downloadBufferSize];
-
-                            // Download content and save to file
-                            using FileStream fs = new(downloadOutput, FileMode.Create, FileAccess.Write, FileShare.None, downloadBufferSize, true);
-                            int bytesRead = await contentStream.ReadAsync(downloadBuffer);
-                            long totalBytesDownloaded = 0;
-                            long bytesToUpdateProgress = totalBytes / 500;
-                            long bytesToProgressCounter = 0;
-                            while (bytesRead > 0)
+                            if (ex.Message.StartsWith("Unable to read data")
+                                && e.Error.InnerException.Message.StartsWith("The SSL connection could not be established"))
                             {
-                                // Write current data to file
-                                await fs.WriteAsync(downloadBuffer.AsMemory(0, bytesRead));
+                                errMsg = "Failed to download new version of UndertaleModTool.\n" +
+                                         "Error - The SSL connection could not be established.";
 
-                                // Update progress
-                                totalBytesDownloaded += bytesRead;
-                                bytesToProgressCounter += bytesRead;
-                                if (bytesToProgressCounter >= bytesToUpdateProgress)
+                                bool isWin7 = Environment.OSVersion.Version.Major == 6;
+                                string win7upd = "\nProbably, you need to install Windows update KB2992611.\n" +
+                                                 "Open the update download page?";
+
+                                if (isWin7)
                                 {
-                                    bytesToProgressCounter -= bytesToUpdateProgress;
-                                    UpdateProgressStatus($"Downloaded MB: {(totalBytesDownloaded / bytesToMB).ToString("F2", CultureInfo.InvariantCulture)}");
-                                }
+                                    if (this.ShowQuestion(errMsg + win7upd, MessageBoxImage.Error) == MessageBoxResult.Yes)
+                                        OpenBrowser("https://www.microsoft.com/en-us/download/details.aspx?id=44622");
 
-                                // Read next bytes
-                                bytesRead = await contentStream.ReadAsync(downloadBuffer);
+                                    window.UpdateButtonEnabled = true;
+                                    return;
+                                }
                             }
+                            else
+                                errMsg = ex.Message;
                         }
+                        else if (e.Error.InnerException is Exception ex1)
+                            errMsg = ex1.Message;
+                        else
+                            errMsg = e.Error.Message;
+
+                        this.ShowError($"Failed to download new version of UndertaleModTool.\nError - {errMsg}.");
+                        window.UpdateButtonEnabled = true;
+                        return;
                     }
 
-                    // Download complete, hide progress bar
-                    HideProgressBar();
+                    // Unzip double-zipped update
+                    ZipFile.ExtractToDirectory(Path.Combine(tempFolder, "Update.zip.zip"), tempFolder, true);
+                    File.Move(Path.Combine(tempFolder, $"{patchName}.zip"), Path.Combine(tempFolder, "Update.zip"), true);
+                    File.Delete(Path.Combine(tempFolder, "Update.zip.zip"));
 
-                    // Extract ZIP
+                    string updaterFolder = Path.Combine(ExePath, "Updater");
+                    if (!File.Exists(Path.Combine(updaterFolder, "UndertaleModToolUpdater.exe")))
+                    {
+                        this.ShowError("Updater not found! Aborting update, report this to the devs!\nLocation checked: " + updaterFolder);
+                        window.UpdateButtonEnabled = true;
+                        return;
+                    }
+
                     string updaterFolderTemp = Path.Combine(tempFolder, "Updater");
-                    bool extractedSuccessfully = false;
                     try
                     {
-                        // Unzip double-zipped update
-                        ZipFile.ExtractToDirectory(downloadOutput, tempFolder, true);
-                        File.Move(Path.Combine(tempFolder, $"{patchName}.zip"), Path.Combine(tempFolder, "Update.zip"), true);
-                        File.Delete(downloadOutput);
+                        if (Directory.Exists(updaterFolderTemp))
+                            Directory.Delete(updaterFolderTemp, true);
 
-                        string updaterFolder = Path.Combine(ExePath, "Updater");
-                        if (!File.Exists(Path.Combine(updaterFolder, "UndertaleModToolUpdater.exe")))
+                        Directory.CreateDirectory(updaterFolderTemp);
+                        foreach (string file in Directory.GetFiles(updaterFolder))
                         {
-                            this.ShowError("Updater not found! Aborting update, report this to the devs!\nLocation checked: " + updaterFolder);
-                            return;
+                            File.Copy(file, Path.Combine(updaterFolderTemp, Path.GetFileName(file)));
                         }
+                    }
+                    catch (Exception ex)
+                    {
+                        this.ShowError($"Can't copy the updater app to the temporary folder.\n{ex}");
+                        window.UpdateButtonEnabled = true;
+                        return;
+                    }
+                    File.WriteAllText(Path.Combine(updaterFolderTemp, "actualAppFolder"), ExePath);
 
+                    window.UpdateButtonEnabled = true;
+
+                    this.ShowMessage("UndertaleModTool will now close to finish the update.");
+
+                    Process.Start(new ProcessStartInfo(Path.Combine(updaterFolderTemp, "UndertaleModToolUpdater.exe"))
+                    {
+                        WorkingDirectory = updaterFolderTemp
+                    });
+
+                    CloseOtherWindows();
+
+                    Closing -= DataWindow_Closing; // disable "on window closed" event handler
+                    Close();
+                });
+
+                _ = Task.Run(() =>
+                {
+                    while (!end)
+                    {
                         try
                         {
-                            if (Directory.Exists(updaterFolderTemp))
-                                Directory.Delete(updaterFolderTemp, true);
-
-                            Directory.CreateDirectory(updaterFolderTemp);
-                            foreach (string file in Directory.GetFiles(updaterFolder))
-                            {
-                                File.Copy(file, Path.Combine(updaterFolderTemp, Path.GetFileName(file)));
-                            }
+                            UpdateProgressStatus($"Downloaded MB: {downloaded}");
                         }
-                        catch (Exception ex)
-                        {
-                            this.ShowError($"Can't copy the updater app to the temporary folder.\n{ex}");
-                            return;
-                        }
-                        File.WriteAllText(Path.Combine(updaterFolderTemp, "actualAppFolder"), ExePath);
+                        catch {}
 
-                        extractedSuccessfully = true;
-                    }
-                    finally
-                    {
-                        // If we return early or not, always update button status
-                        Dispatcher.Invoke(() =>
-                        {
-                            window.UpdateButtonEnabled = !extractedSuccessfully;
-                        });
+                        Thread.Sleep(100);
                     }
 
-                    // Move back to UI thread to perform final actions
-                    Dispatcher.Invoke(() =>
-                    {
-                        this.ShowMessage("UndertaleModTool will now close to finish the update.");
-
-                        // Invoke updater
-                        Process.Start(new ProcessStartInfo(Path.Combine(updaterFolderTemp, "UndertaleModToolUpdater.exe"))
-                        {
-                            WorkingDirectory = updaterFolderTemp
-                        });
-
-                        CloseOtherWindows();
-
-                        Closing -= DataWindow_Closing; // disable "on window closed" event handler
-                        Close();
-                    });
+                    ended = true;
                 });
-            }
-            catch (Exception e)
-            {
-                string errMsg;
-                if (e.InnerException?.InnerException is Exception ex)
-                    errMsg = ex.Message;
-                else if (e.InnerException is Exception ex1)
-                    errMsg = ex1.Message;
-                else
-                    errMsg = e.Message;
 
-                this.ShowError($"Failed to download new version of UndertaleModTool.\nError - {errMsg}.");
-                window.UpdateButtonEnabled = true;
+                // The Artifact is already zipped then zipped again by the download archive
+                webClient.DownloadFileAsync(new Uri(downloadUrl), Path.Combine(tempFolder, "Update.zip.zip"));
             }
         }
 

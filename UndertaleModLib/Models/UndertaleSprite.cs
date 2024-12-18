@@ -279,8 +279,9 @@ public class UndertaleSprite : UndertaleNamedResource, PrePaddedObject, INotifyP
 
     public MaskEntry NewMaskEntry()
     {
+        MaskEntry newEntry = new MaskEntry();
         uint len = (Width + 7) / 8 * Height;
-        MaskEntry newEntry = new MaskEntry(new byte[len], Width, Height);
+        newEntry.Data = new byte[len];
         return newEntry;
     }
 
@@ -347,24 +348,13 @@ public class UndertaleSprite : UndertaleNamedResource, PrePaddedObject, INotifyP
     {
         public byte[] Data { get; set; }
 
-        /// <summary>
-        /// Width of this sprite mask. UTMT only.
-        /// </summary>
-        public uint Width { get; set; }
-        /// <summary>
-        /// Height of this sprite mask. UTMT only.
-        /// </summary>
-        public uint Height { get; set; }
-
         public MaskEntry()
         {
         }
 
-        public MaskEntry(byte[] data, uint width, uint height)
+        public MaskEntry(byte[] data)
         {
             this.Data = data;
-            this.Width = width;
-            this.Height = height;
         }
 
         /// <inheritdoc/>
@@ -524,9 +514,7 @@ public class UndertaleSprite : UndertaleNamedResource, PrePaddedObject, INotifyP
             writer.Write((byte)0);
             total++;
         }
-
-        (uint width, uint height) = CalculateMaskDimensions(writer.undertaleData);
-        Util.DebugUtil.Assert(total == CalculateMaskDataSize(width, height, (uint)CollisionMasks.Count), "Invalid mask data for sprite");
+        Util.DebugUtil.Assert(total == CalculateMaskDataSize(Width, Height, (uint)CollisionMasks.Count), "Invalid mask data for sprite");
     }
 
     private static byte[] DecodeSpineBlob(byte[] blob)
@@ -756,9 +744,7 @@ public class UndertaleSprite : UndertaleNamedResource, PrePaddedObject, INotifyP
 
                 case SpriteType.Spine:
                     {
-                        case 1:
-                            reader.Position += 8 + (uint)jsonLength + (uint)atlasLength + (uint)textures;
-                            break;
+                        reader.Align(4);
 
                         if (reader.undertaleData.IsVersionAtLeast(2023, 1))
                             count += 1 + UndertaleSimpleList<TextureEntry>.UnserializeChildObjectCount(reader);
@@ -775,7 +761,9 @@ public class UndertaleSprite : UndertaleNamedResource, PrePaddedObject, INotifyP
 
                         switch (spineVersion)
                         {
-                            reader.Position += (uint)jsonLength + (uint)atlasLength;
+                            case 1:
+                                reader.Position += 8 + jsonLength + atlasLength + textures;
+                                break;
 
                             case 2:
                             case 3:
@@ -863,7 +851,7 @@ public class UndertaleSprite : UndertaleNamedResource, PrePaddedObject, INotifyP
         uint total = 0;
         for (uint i = 0; i < maskCount; i++)
         {
-            newMasks.Add(new MaskEntry(reader.ReadBytes((int)len), width, height));
+            newMasks.Add(new MaskEntry(reader.ReadBytes((int)len)));
             total += len;
         }
 

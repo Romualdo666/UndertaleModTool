@@ -195,7 +195,6 @@ public partial class Program : IScriptInterface
                 typeof(JsonConvert).GetTypeInfo().Assembly,
                 typeof(System.Text.RegularExpressions.Regex).GetTypeInfo().Assembly,
                 typeof(TextureWorker).GetTypeInfo().Assembly,
-                typeof(ImageMagick.MagickImage).GetTypeInfo().Assembly,
                 typeof(Underanalyzer.Decompiler.DecompileContext).Assembly)
             // "WithEmitDebugInformation(true)" not only lets us to see a script line number which threw an exception,
             // but also provides other useful debug info when we run UMT in "Debug".
@@ -659,8 +658,7 @@ public partial class Program : IScriptInterface
         {
             if (Verbose)
                 Console.WriteLine($"Dumping {texture.Name}");
-            using FileStream fs = new($"{directory}/{texture.Name.Content}.png", FileMode.Create);
-            texture.TextureData.Image.SavePng(fs);
+            File.WriteAllBytes($"{directory}/{texture.Name.Content}.png", texture.TextureData.TextureBlob);
         }
     }
 
@@ -703,7 +701,7 @@ public partial class Program : IScriptInterface
         if (Verbose)
             Console.WriteLine("Replacing " + textureEntry);
 
-        texture.TextureData.Image = GMImage.FromPng(File.ReadAllBytes(fileToReplace.FullName));
+        texture.TextureData.TextureBlob = File.ReadAllBytes(fileToReplace.FullName);
     }
 
     /// <summary>
@@ -715,7 +713,7 @@ public partial class Program : IScriptInterface
         string lines;
         try
         {
-            lines = File.ReadAllText(path, Encoding.UTF8);
+            lines = File.ReadAllText(path);
         }
         catch (Exception exc)
         {
@@ -742,7 +740,7 @@ public partial class Program : IScriptInterface
 
         try
         {
-            CSharpScript.EvaluateAsync(code, CliScriptOptions.WithFilePath(scriptFile ?? "").WithFileEncoding(Encoding.UTF8), this, typeof(IScriptInterface)).GetAwaiter().GetResult();
+            CSharpScript.EvaluateAsync(code, CliScriptOptions, this, typeof(IScriptInterface)).GetAwaiter().GetResult();
             ScriptExecutionSuccess = true;
             ScriptErrorMessage = "";
         }

@@ -27,11 +27,6 @@ namespace UndertaleModLib.Util
 
             public int Read(byte[] buffer, int count)
             {
-                if (count < 0)
-                {
-                    throw new ArgumentOutOfRangeException(nameof(count));
-                }
-
                 int n = _length - _position;
                 if (n > count)
                     n = count;
@@ -80,9 +75,6 @@ namespace UndertaleModLib.Util
 
             public void Write(byte[] buffer, int count)
             {
-                if (count < 0)
-                    throw new ArgumentOutOfRangeException(nameof(count));
-
                 int i = _position + count;
                 if (i < 0)
                     throw new IOException("Writing out of the chunk buffer bounds.");
@@ -182,10 +174,6 @@ namespace UndertaleModLib.Util
 
         public string ReadChars(int count)
         {
-            if (count < 0)
-            {
-                throw new ArgumentOutOfRangeException(nameof(count));
-            }
             if (chunkBuffer.Position + count > _length)
             {
                 throw new IOException("Reading out of chunk bounds");
@@ -210,10 +198,6 @@ namespace UndertaleModLib.Util
 
         public byte[] ReadBytes(int count)
         {
-            if (count < 0)
-            {
-                throw new ArgumentOutOfRangeException(nameof(count));
-            }
             if (chunkBuffer.Position + count > _length)
             {
                 throw new IOException("Reading out of chunk bounds");
@@ -284,9 +268,7 @@ namespace UndertaleModLib.Util
 
             int length = BinaryPrimitives.ReadInt32LittleEndian(ReadToBuffer(4));
 
-            if (length < 0)
-                throw new IOException("Invalid string length");
-            if (chunkBuffer.Position + length + 1 > _length)
+            if (chunkBuffer.Position + length + 1 >= _length)
                 throw new IOException("Reading out of chunk bounds");
 
             string res;
@@ -311,12 +293,9 @@ namespace UndertaleModLib.Util
 
             return res;
         }
-
         public void SkipGMString()
         {
             int length = BinaryPrimitives.ReadInt32LittleEndian(ReadToBuffer(4));
-            if (length < 0)
-                throw new IOException("Invalid string length");
             Position += (uint)length + 1;
         }
 

@@ -1,4 +1,6 @@
 ﻿// Made by Grossley
+// Version 1
+// 12/07/2020
 
 using System.Text;
 using System;
@@ -9,10 +11,11 @@ using UndertaleModLib.Util;
 
 EnsureDataLoaded();
 
-string texFolder = Path.Combine(Path.GetDirectoryName(FilePath), "Export_Masks");
+string texFolder = GetFolder(FilePath) + "Export_Masks" + Path.DirectorySeparatorChar;
+TextureWorker worker = new TextureWorker();
 if (Directory.Exists(texFolder))
 {
-    ScriptError("A mask export already exists. Please remove it.", "Error");
+    ScriptError("A texture export already exists. Please remove it.", "Error");
     return;
 }
 
@@ -21,15 +24,18 @@ Directory.CreateDirectory(texFolder);
 SetProgressBar(null, "Sprites", 0, Data.Sprites.Count);
 StartProgressBarUpdater();
 
-TextureWorker worker = null;
-using (worker = new())
-{
-    await DumpSprites();
-}
+await DumpSprites();
+worker.Cleanup();
 
 await StopProgressBarUpdater();
 HideProgressBar();
-ScriptMessage($"Export Complete.\n\nLocation: {texFolder}");
+ScriptMessage("Export Complete.\n\nLocation: " + texFolder);
+
+
+string GetFolder(string path)
+{
+    return Path.GetDirectoryName(path) + Path.DirectorySeparatorChar;
+}
 
 async Task DumpSprites()
 {
@@ -40,10 +46,9 @@ void DumpSprite(UndertaleSprite sprite)
 {
     for (int i = 0; i < sprite.CollisionMasks.Count; i++)
     {
-        if (sprite.CollisionMasks[i]?.Data is not null)
+        if ((sprite.CollisionMasks[i]?.Data != null))
         {
-            (uint maskWidth, uint maskHeight) = sprite.CalculateMaskDimensions(Data);
-            TextureWorker.ExportCollisionMaskPNG(sprite.CollisionMasks[i], Path.Combine(texFolder, $"{sprite.Name.Content}_{i}.png"), (int)maskWidth, (int)maskHeight);
+            TextureWorker.ExportCollisionMaskPNG(sprite, sprite.CollisionMasks[i], texFolder + sprite.Name.Content + "_" + i + ".png");
         }
     }
 

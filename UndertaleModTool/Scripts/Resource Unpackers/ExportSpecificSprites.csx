@@ -17,6 +17,8 @@ if (texFolder is null)
 Directory.CreateDirectory(Path.Combine(texFolder, "Sprites"));
 texFolder = Path.Combine(texFolder, "Sprites");
 
+TextureWorker worker = new TextureWorker();
+
 List<UndertaleSprite> spritesToDump = new List<UndertaleSprite>();
 List<String> splitStringsList = new List<String>();
 
@@ -40,20 +42,19 @@ foreach (string listElement in splitStringsList)
 SetProgressBar(null, "Sprites", 0, spritesToDump.Count);
 StartProgressBarUpdater();
 
-TextureWorker worker = null;
-using (worker = new())
-{
-    await Task.Run(() =>
+
+
+await Task.Run(() => {
+    foreach(UndertaleSprite sprToDump in spritesToDump)
     {
-        foreach (UndertaleSprite sprToDump in spritesToDump)
-        {
-            DumpSprite(sprToDump);
-        }
-    });
-}
+        DumpSprite(sprToDump);
+    }
+});
+
+worker.Cleanup();
 await StopProgressBarUpdater();
 HideProgressBar();
-ScriptMessage($"Export Complete.\n\nLocation: {texFolder}");
+ScriptMessage("Export Complete.\n\nLocation: " + texFolder);
 
 void DumpSprite(UndertaleSprite sprite)
 {
@@ -61,7 +62,7 @@ void DumpSprite(UndertaleSprite sprite)
     {
         if (sprite.Textures[i]?.Texture is not null)
         {
-            worker.ExportAsPNG(sprite.Textures[i].Texture, Path.Combine(texFolder, $"{sprite.Name.Content}_{i}.png"), null, padded); // Include padding to make sprites look neat!
+            worker.ExportAsPNG(sprite.Textures[i].Texture, Path.Combine(texFolder , sprite.Name.Content + "_" + i + ".png"), null, padded); // Include padding to make sprites look neat!
         }
     }
     IncrementProgress();
