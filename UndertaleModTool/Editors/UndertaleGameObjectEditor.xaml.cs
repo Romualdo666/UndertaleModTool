@@ -32,7 +32,6 @@ namespace UndertaleModTool
         private static readonly MainWindow mainWindow = Application.Current.MainWindow as MainWindow;
 
         private bool handleMouseScroll = true;
-        private static readonly MainWindow mainWindow = Application.Current.MainWindow as MainWindow;
 
         public UndertaleGameObjectEditor()
         {
