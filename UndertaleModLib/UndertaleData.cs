@@ -334,7 +334,7 @@ namespace UndertaleModLib
         /// <summary>
         /// Some info for the editor to store data on.
         /// </summary>
-        public readonly ToolInfo ToolInfo = new();
+        public readonly ToolInfo ToolInfo = new ToolInfo();
 
         /// <summary>
         /// Shows the current padding value. <c>-1</c> indicates a pre 1.4.9999 padding, where the default is 16.

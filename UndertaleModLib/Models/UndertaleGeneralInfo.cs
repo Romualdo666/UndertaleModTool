@@ -89,16 +89,12 @@ public class UndertaleGeneralInfo : UndertaleObject, IDisposable
         /// </summary>
         JavaScriptMode = 0x8000,
 
+        LicenseExclusions = 0x10000,
+
         /// <summary>
         /// This flag is set when a game is launched from the Gamemaker Studio 2 IDE using the 'Run' or 'Debug' options
         /// </summary>
-        GameRunFromGMS2IDE = 0x10000,
-
-        /// <summary>
-        /// Obsolete version of <see cref="GameRunFromGMS2IDE"/>.
-        /// </summary>
-        [Obsolete("Old name of GameRunFromGMS2IDE")]
-        LicenseExclusions = GameRunFromGMS2IDE,
+        GameRunFromGMS2IDE = 0x20000,
 
         /// <summary>
         /// For the GX.games runner, allows the browser canvas to be transparent where nothing is drawn.
@@ -776,7 +772,7 @@ public class UndertaleOptions : UndertaleObject, IDisposable
     public uint Frequency { get; set; } = 0;
 
     /// <summary>
-    /// Whether the game uses V-Sync.
+    /// Whether the game uses V-Sync. Used only in Game Maker 8 and earlier.
     /// </summary>
     public uint VertexSync { get; set; } = 0;
 

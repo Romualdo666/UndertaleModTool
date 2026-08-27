@@ -31,19 +31,13 @@ namespace UndertaleModLib
         /// <summary>
         /// Creates a new observable list, which is empty and has the specified initial capacity.
         /// </summary>
-        public UndertaleObservableList(int capacity) : this()
+        public UndertaleObservableList(int capacity)
         {
+            // Get ahold of internal list
+            internalList = (List<T>)itemsField.GetValue(this);
+
             // Set capacity directly
             internalList.Capacity = capacity;
-        }
-
-        /// <summary>
-        /// Creates a new observable list from the contents of the provided enumerable.
-        /// </summary>
-        public UndertaleObservableList(IEnumerable<T> enumerable) : this()
-        {
-            // Add range of elements directly to internal list
-            internalList.AddRange(enumerable);
         }
 
         /// <summary>
@@ -67,12 +61,6 @@ namespace UndertaleModLib
         {
             internalList.Add(item);
         }
-
-        /// <inheritdoc cref="List{T}.FindIndex(Predicate{T})"/>
-        public int FindIndex(Predicate<T> match)
-        {
-            return internalList.FindIndex(match);
-        }
     }
 
     /// <summary>
@@ -80,27 +68,6 @@ namespace UndertaleModLib
     /// </summary>
     public class UndertaleSimpleList<T> : UndertaleObservableList<T>, UndertaleObject where T : UndertaleObject, new()
     {
-        /// <summary>
-        /// Creates a new simple list, which is empty and has default capacity.
-        /// </summary>
-        public UndertaleSimpleList()
-        {
-        }
-
-        /// <summary>
-        /// Creates a new simple list, which is empty and has the specified initial capacity.
-        /// </summary>
-        public UndertaleSimpleList(int capacity) : base(capacity)
-        {
-        }
-
-        /// <summary>
-        /// Creates a new simple list from the contents of the provided enumerable.
-        /// </summary>
-        public UndertaleSimpleList(IEnumerable<T> enumerable) : base(enumerable)
-        {
-        }
-
         /// <inheritdoc />
         public void Serialize(UndertaleWriter writer)
         {
@@ -266,27 +233,6 @@ namespace UndertaleModLib
     /// </summary>
     public class UndertaleSimpleListShort<T> : UndertaleObservableList<T>, UndertaleObject where T : UndertaleObject, new()
     {
-        /// <summary>
-        /// Creates a new (short) simple list, which is empty and has default capacity.
-        /// </summary>
-        public UndertaleSimpleListShort()
-        {
-        }
-
-        /// <summary>
-        /// Creates a new (short) simple list, which is empty and has the specified initial capacity.
-        /// </summary>
-        public UndertaleSimpleListShort(int capacity) : base(capacity)
-        {
-        }
-
-        /// <summary>
-        /// Creates a new (short) simple list from the contents of the provided enumerable.
-        /// </summary>
-        public UndertaleSimpleListShort(IEnumerable<T> enumerable) : base(enumerable)
-        {
-        }
-
         private void EnsureShortCount()
         {
             if (Count > Int16.MaxValue)
@@ -397,27 +343,6 @@ namespace UndertaleModLib
     /// </summary>
     public class UndertalePointerList<T> : UndertaleObservableList<T>, UndertaleObject where T : UndertaleObject, new()
     {
-        /// <summary>
-        /// Creates a new pointer list, which is empty and has default capacity.
-        /// </summary>
-        public UndertalePointerList()
-        {
-        }
-
-        /// <summary>
-        /// Creates a new pointer list, which is empty and has the specified initial capacity.
-        /// </summary>
-        public UndertalePointerList(int capacity) : base(capacity)
-        {
-        }
-
-        /// <summary>
-        /// Creates a new pointer list from the contents of the provided enumerable.
-        /// </summary>
-        public UndertalePointerList(IEnumerable<T> enumerable) : base(enumerable)
-        {
-        }
-
         /// <inheritdoc />
         public void Serialize(UndertaleWriter writer)
         {

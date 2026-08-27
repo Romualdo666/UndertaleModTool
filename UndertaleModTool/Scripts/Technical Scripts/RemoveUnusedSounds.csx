@@ -7,7 +7,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Linq;
-using UndertaleModLib.Util;
 
 EnsureDataLoaded();
 
@@ -28,7 +27,7 @@ List<int> audioGroupNumbers = new List<int>();
 List<int> audioGroupNumbersSorted = new List<int>();
 List<int> audioGroupNumbersUsed = new List<int>();
 List<int> audioGroupNumbersUsedSorted = new List<int>();
-string backupLocation = Paths.JoinVerifyWithinDirectory(GetFolder(FilePath), "AudioGroups_" + DateTime.Now.ToString("MM-dd-yyyy_HH-mm-ss"));
+string backupLocation = Path.Combine(GetFolder(FilePath), "AudioGroups_" + DateTime.Now.ToString("MM-dd-yyyy_HH-mm-ss"));
 
 foreach (string file in dirFiles) 
 {
@@ -43,7 +42,7 @@ foreach (string file in dirFiles)
             continue;
         audioGroupNumbers.Add(number);
         Directory.CreateDirectory(backupLocation);
-        File.Copy(file, Paths.JoinVerifyWithinDirectory(backupLocation, shortFileName));
+        File.Copy(file, Path.Combine(backupLocation, shortFileName));
     }
 }
 
@@ -87,13 +86,13 @@ for (var i = 0; i < audioGroupNumbersSorted.Count; i++)
 {
     if (audioGroupNumbersUsedMap[i] == false)
     {
-        File.Delete(Paths.JoinVerifyWithinDirectory(winFolder, "audiogroup" + audioGroupNumbersSorted[i].ToString() + ".dat"));
+        File.Delete(Path.Combine(winFolder, "audiogroup" + audioGroupNumbersSorted[i].ToString() + ".dat"));
     }
 }
 
 for (var i = 0; i < audioGroupNumbersUsedSorted.Count; i++)
 {
-    string audioGroupDataPath = Paths.JoinVerifyWithinDirectory(winFolder, "audiogroup" + audioGroupNumbersUsedSorted[i].ToString() + ".dat");
+    string audioGroupDataPath = Path.Combine(winFolder, "audiogroup" + audioGroupNumbersUsedSorted[i].ToString() + ".dat");
     if (!File.Exists(audioGroupDataPath))
         continue; // This should not occur.
     UndertaleData audioGroupData = LoadAudioGroup(audioGroupDataPath);

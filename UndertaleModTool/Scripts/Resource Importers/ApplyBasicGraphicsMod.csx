@@ -13,10 +13,8 @@ EnsureDataLoaded();
 
 // At this point, this just imports the sprites.
 string importFolder = PromptChooseDirectory();
-if (importFolder is null)
-{
-    throw new ScriptCancelledException("The import folder was not set.");
-}
+if (importFolder == null)
+    throw new ScriptException("The import folder was not set.");
 
 string[] dirFiles = Directory.GetFiles(importFolder);
 List<(string filename, string strippedFilename, string spriteName, UndertaleSprite sprite, int frame)> images = new();
@@ -71,7 +69,7 @@ await Task.Run(() =>
         {
             int prevframe = frame - 1;
             string prevFrameName = $"{spriteName}_{prevframe}.png";
-            if (!File.Exists(Paths.JoinVerifyWithinDirectory(importFolder, prevFrameName)))
+            if (!File.Exists(Path.Combine(importFolder, prevFrameName)))
             {
                 throw new ScriptException($"{spriteName} is missing image index {prevframe} (failed to find {prevFrameName}).");
             }
@@ -116,10 +114,7 @@ await Task.Run(() =>
             }
 
             // Actually replace texture
-            MainThreadAction(() =>
-            {
-                item.ReplaceTexture(image);
-            });
+            item.ReplaceTexture(image);
         }
         catch
         {

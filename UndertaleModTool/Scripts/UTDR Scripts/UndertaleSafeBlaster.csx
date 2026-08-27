@@ -18,10 +18,7 @@ if (obj_safeblaster == null)
     Data.GameObjects.Add(obj_safeblaster);
 }
 
-UndertaleModLib.Compiler.CodeImportGroup importGroup = new(Data)
-{
-    MainThreadAction = MainThreadAction
-};
+UndertaleModLib.Compiler.CodeImportGroup importGroup = new(Data);
 
 importGroup.QueueReplace(obj_safeblaster.EventHandlerFor(EventType.Create, Data), @"
 con = 0

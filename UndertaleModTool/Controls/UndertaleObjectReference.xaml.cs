@@ -31,20 +31,6 @@ namespace UndertaleModTool
         private static readonly Regex camelCaseRegex = new("(?<=[a-z])([A-Z])", RegexOptions.Compiled);
         private static readonly char[] vowels = { 'a', 'o', 'u', 'e', 'i', 'y' };
 
-        public event EventHandler<ObjectReferenceChangedEventArgs> ObjectReferenceChanged;
-
-        public class ObjectReferenceChangedEventArgs : EventArgs
-        {
-            private object OldObject { get; }
-            private object NewObject { get; }
-
-            public ObjectReferenceChangedEventArgs(object oldObj, object newObj)
-            {
-                OldObject = oldObj;
-                NewObject = newObj;
-            }
-        }
-
         public static DependencyProperty ObjectReferenceProperty =
             DependencyProperty.Register("ObjectReference", typeof(object),
                 typeof(UndertaleObjectReference),
@@ -212,9 +198,6 @@ namespace UndertaleModTool
         {
             if (ObjectReference is null)
             {
-                object oldObj = ObjectReference;
-                int oldCodeCount = mainWindow.Data.Code?.Count ?? -1;
-
                 if (GameObject is not null)
                 {
                     ObjectReference = GameObject.EventHandlerFor(ObjectEventType, ObjectEventSubtype, mainWindow.Data);
@@ -257,18 +240,6 @@ namespace UndertaleModTool
                 else
                 {
                     mainWindow.ShowError("Adding not supported in this situation.");
-                }
-
-                if (oldObj != ObjectReference)
-                {
-                    ObjectReferenceChanged?.Invoke(this, new ObjectReferenceChangedEventArgs(oldObj, ObjectReference));
-
-                    // If a new code entry was added, mark it as new for the project system as well
-                    if (mainWindow.Project is not null && oldCodeCount != -1 && 
-                        oldCodeCount == mainWindow.Data.Code.Count - 1 && ObjectReference is UndertaleCode newCode)
-                    {
-                        mainWindow.Project.MarkAssetForExport(newCode);
-                    }
                 }
             }
             else
@@ -333,7 +304,6 @@ namespace UndertaleModTool
 
         private void Remove_Click(object sender, RoutedEventArgs e)
         {
-            ObjectReferenceChanged?.Invoke(this, new ObjectReferenceChangedEventArgs(ObjectReference, null));
             ObjectReference = null;
         }
 
@@ -360,7 +330,6 @@ namespace UndertaleModTool
             e.Effects = e.AllowedEffects.HasFlag(DragDropEffects.Link) && sourceItem != null && CanChange && sourceItem.GetType() == ObjectType ? DragDropEffects.Link : DragDropEffects.None;
             if (e.Effects == DragDropEffects.Link)
             {
-                ObjectReferenceChanged?.Invoke(this, new ObjectReferenceChangedEventArgs(ObjectReference, sourceItem));
                 ObjectReference = sourceItem;
             }
             e.Handled = true;

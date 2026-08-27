@@ -8,10 +8,8 @@ using System.Threading.Tasks;
 EnsureDataLoaded();
 
 string importFolder = PromptChooseDirectory();
-if (importFolder is null)
-{
-    throw new ScriptCancelledException("The import folder was not set.");
-}
+if (importFolder == null)
+    throw new ScriptException("The import folder was not set.");
 
 var shadersToModify = Directory.GetDirectories(importFolder).Select(x => Path.GetFileName(x));
 List<string> shadersExisting = new List<string>();

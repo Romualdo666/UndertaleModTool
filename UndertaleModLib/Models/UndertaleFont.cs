@@ -1,6 +1,4 @@
 ﻿using System;
-using UndertaleModLib.Project;
-using UndertaleModLib.Project.SerializableAssets;
 
 namespace UndertaleModLib.Models;
 
@@ -8,7 +6,7 @@ namespace UndertaleModLib.Models;
 /// A font entry of a data file.
 /// </summary>
 [PropertyChanged.AddINotifyPropertyChangedInterface]
-public class UndertaleFont : UndertaleNamedResource, IProjectAsset, IDisposable
+public class UndertaleFont : UndertaleNamedResource, IDisposable
 {
     /// <summary>
     /// The name of the font.
@@ -403,21 +401,4 @@ public class UndertaleFont : UndertaleNamedResource, IProjectAsset, IDisposable
         Texture = null;
         Glyphs = new();
     }
-
-    /// <inheritdoc/>
-    ISerializableProjectAsset IProjectAsset.GenerateSerializableProjectAsset(ProjectContext projectContext)
-    {
-        SerializableFont serializable = new();
-        serializable.PopulateFromData(projectContext, this);
-        return serializable;
-    }
-
-    /// <inheritdoc/>
-    public string ProjectName => Name?.Content ?? "<unknown name>";
-
-    /// <inheritdoc/>
-    public SerializableAssetType ProjectAssetType => SerializableAssetType.Font;
-
-    /// <inheritdoc/>
-    public bool ProjectExportable => Name?.Content is not null && Texture is not null;
 }

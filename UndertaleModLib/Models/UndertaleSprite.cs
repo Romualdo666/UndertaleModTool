@@ -6,8 +6,6 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using UndertaleModLib.Util;
-using UndertaleModLib.Project;
-using UndertaleModLib.Project.SerializableAssets;
 
 namespace UndertaleModLib.Models;
 
@@ -20,7 +18,7 @@ public enum AnimSpeedType : uint
 /// <summary>
 /// Sprite entry in the data file.
 /// </summary>
-public class UndertaleSprite : UndertaleNamedResource, IProjectAsset, PrePaddedObject, INotifyPropertyChanged, IDisposable
+public class UndertaleSprite : UndertaleNamedResource, PrePaddedObject, INotifyPropertyChanged, IDisposable
 {
     /// <summary>
     /// The name of the sprite.
@@ -206,49 +204,6 @@ public class UndertaleSprite : UndertaleNamedResource, IProjectAsset, PrePaddedO
         VectorShapes = null;
         VectorCollisionMaskRLEData = null;
         VectorFrameToShapeMap = null;
-    }
-
-    /// <inheritdoc/>
-    ISerializableProjectAsset IProjectAsset.GenerateSerializableProjectAsset(ProjectContext projectContext)
-    {
-        SerializableSprite serializable = new();
-        serializable.PopulateFromData(projectContext, this);
-        return serializable;
-    }
-
-    /// <inheritdoc/>
-    public string ProjectName => Name?.Content ?? "<unknown name>";
-
-    /// <inheritdoc/>
-    public SerializableAssetType ProjectAssetType => SerializableAssetType.Sprite;
-
-    /// <inheritdoc/>
-    public bool ProjectExportable
-    {
-        get
-        {
-            if (Name?.Content is null)
-            {
-                return false;
-            }
-            if (IsSpecialType && SSpriteType is not SpriteType.Normal) // TODO: support more types
-            {
-                return false;
-            }
-            if ((Textures?.Count ?? 0) == 0)
-            {
-                return false;
-            }
-            if (Textures.Any(t => t?.Texture is null))
-            {
-                return false;
-            }
-            if (CollisionMasks.Any(c => c?.Data is null))
-            {
-                return false;
-            }
-            return true;
-        }
     }
 
     /// <summary>
@@ -1138,14 +1093,10 @@ public class UndertaleSpineTextureEntry : UndertaleObject, IDisposable
     {
         reader.Position += 8;                        // Size
         if (reader.undertaleData.IsVersionAtLeast(2023, 1))
-        {
             reader.Position += 4; // "TextureEntryLength"
-        }
         else
-        {
-            uint texBlobLength = reader.ReadUInt32(); // "TexBlob"
-            reader.Position += texBlobLength;
-        }
+            reader.Position += (uint)reader.ReadInt32(); // "TexBlob"
+
         return 0;
     }
 

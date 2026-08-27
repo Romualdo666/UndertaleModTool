@@ -20,10 +20,7 @@ var obj_time = Data.GameObjects.ByName("obj_time");
 
 Data.Functions.EnsureDefined("font_add", Data.Strings);
 
-UndertaleModLib.Compiler.CodeImportGroup importGroup = new(Data)
-{
-    MainThreadAction = MainThreadAction
-};
+UndertaleModLib.Compiler.CodeImportGroup importGroup = new(Data);
 importGroup.QueueAppend(obj_time.EventHandlerFor(EventType.Create, Data), @"
 // NOTE: According to GMS documentation the font ranges are ignored with ttf fonts, and that seems to be indeed the case
 font_add(""wingding.ttf"", 8, false, false, 32, 127);

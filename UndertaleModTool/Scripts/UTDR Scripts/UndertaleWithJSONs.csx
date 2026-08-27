@@ -24,7 +24,7 @@ else if (Data?.GeneralInfo?.DisplayName?.Content.ToLower() == "deltarune chapter
     return;
 }
 
-string langFolder = Path.Join(Path.GetDirectoryName(FilePath), "lang");
+string langFolder = Path.Combine(Path.GetDirectoryName(FilePath), "lang");
 if (Directory.Exists(langFolder))
 {
     ScriptError("The lang folder already exists.", "Error");
@@ -35,10 +35,7 @@ Directory.CreateDirectory(langFolder);
 
 GlobalDecompileContext globalDecompileContext = new(Data);
 IDecompileSettings decompilerSettings = new DecompileSettings();
-UndertaleModLib.Compiler.CodeImportGroup importGroup = new(Data, globalDecompileContext, decompilerSettings)
-{
-    MainThreadAction = MainThreadAction
-};
+UndertaleModLib.Compiler.CodeImportGroup importGroup = new(Data, globalDecompileContext, decompilerSettings);
 
 ScriptMessage("JSONifies Undertale versions 1.05+");
 ScriptMessage(@"Switch languages using F11.
@@ -149,7 +146,7 @@ void MakeJSON(string language)
         }
     }
 
-    string outputPath = Path.Join(langFolder, "lang_" + language + ".json");
+    string outputPath = Path.Combine(langFolder, "lang_" + language + ".json");
     File.WriteAllText(outputPath, JsonConvert.SerializeObject(contents, Formatting.Indented));
 
     IncProgressLocal();

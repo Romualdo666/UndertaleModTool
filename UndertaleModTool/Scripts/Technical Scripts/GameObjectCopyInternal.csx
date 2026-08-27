@@ -95,10 +95,7 @@ for (var j = 0; j < splitStringsList.Count; j++)
                                 string NewGMLName = ((donorACT.CodeId?.Name?.Content).Replace(obj.Name.Content,(obj.Name.Content + "_Copy")));
                                 try
                                 {
-                                    UndertaleModLib.Compiler.CodeImportGroup importGroup = new(Data)
-                                    {
-                                        MainThreadAction = MainThreadAction
-                                    };
+                                    UndertaleModLib.Compiler.CodeImportGroup importGroup = new(Data);
                                     importGroup.QueueReplace(NewGMLName, codeToCopy);
                                     importGroup.Import();
                                 }

@@ -25,8 +25,7 @@ Converted to be more efficient by Grossley.");
 
 UndertaleModLib.Compiler.CodeImportGroup importGroup = new(Data)
 {
-    ThrowOnNoOpFindReplace = true,
-    MainThreadAction = MainThreadAction
+    ThrowOnNoOpFindReplace = true
 };
 
 // Show the border settings on PC.

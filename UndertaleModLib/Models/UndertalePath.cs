@@ -1,7 +1,4 @@
 ﻿using System;
-using System.ComponentModel;
-using UndertaleModLib.Project;
-using UndertaleModLib.Project.SerializableAssets;
 
 namespace UndertaleModLib.Models;
 
@@ -9,7 +6,7 @@ namespace UndertaleModLib.Models;
 /// A Path entry in a GameMaker data file.
 /// </summary>
 [PropertyChanged.AddINotifyPropertyChangedInterface]
-public class UndertalePath : UndertaleNamedResource, IProjectAsset, INotifyPropertyChanged, IDisposable
+public class UndertalePath : UndertaleNamedResource, IDisposable
 {
     /// <summary>
     /// The name of <see cref="UndertalePath"/>.
@@ -34,20 +31,15 @@ public class UndertalePath : UndertaleNamedResource, IProjectAsset, INotifyPrope
     public uint Precision { get; set; } = 4;
 
     /// <summary>
-    /// The collection of <see cref="PathPoint"/>s this <see cref="UndertalePath"/> has.
+    /// The amount of <see cref="PathPoint"/>s this <see cref="UndertalePath"/> has.
     /// </summary>
     public UndertaleSimpleList<PathPoint> Points { get; set; } = new UndertaleSimpleList<PathPoint>();
-
-    /// <inheritdoc />
-#pragma warning disable CS0067 // TODO: remove this suppression once Fody is no longer in use
-    public event PropertyChangedEventHandler PropertyChanged;
-#pragma warning restore CS0067
 
     /// <summary>
     /// A point in a <see cref="UndertalePath"/>.
     /// </summary>
     [PropertyChanged.AddINotifyPropertyChangedInterface]
-    public class PathPoint : UndertaleObject, INotifyPropertyChanged, IStaticChildObjectsSize
+    public class PathPoint : UndertaleObject, IStaticChildObjectsSize
     {
         /// <inheritdoc cref="IStaticChildObjectsSize.ChildObjectsSize" />
         public static readonly uint ChildObjectsSize = 12;
@@ -66,11 +58,6 @@ public class UndertalePath : UndertaleNamedResource, IProjectAsset, INotifyPrope
         /// A percentage of how fast an <see cref="UndertaleGameObject"/> moves until it hits the next <see cref="PathPoint"/>. <br/>.
         /// </summary>
         public float Speed { get; set; } = 1f;
-
-        /// <inheritdoc />
-#pragma warning disable CS0067 // TODO: remove this suppression once Fody is no longer in use
-        public event PropertyChangedEventHandler PropertyChanged;
-#pragma warning restore CS0067
 
         /// <inheritdoc />
         public void Serialize(UndertaleWriter writer)
@@ -131,21 +118,4 @@ public class UndertalePath : UndertaleNamedResource, IProjectAsset, INotifyPrope
         Name = null;
         Points = new();
     }
-
-    /// <inheritdoc/>
-    ISerializableProjectAsset IProjectAsset.GenerateSerializableProjectAsset(ProjectContext projectContext)
-    {
-        SerializablePath serializable = new();
-        serializable.PopulateFromData(projectContext, this);
-        return serializable;
-    }
-
-    /// <inheritdoc/>
-    public string ProjectName => Name?.Content ?? "<unknown name>";
-
-    /// <inheritdoc/>
-    public SerializableAssetType ProjectAssetType => SerializableAssetType.Path;
-
-    /// <inheritdoc/>
-    public bool ProjectExportable => Name?.Content is not null;
 }

@@ -241,7 +241,7 @@ async Task<List<TPageItem>> dumpTexturePageItems(string dir, bool reuse)
 
     var tpageitems = await Task.Run(() => Data.TexturePageItems
         .AsParallel()
-        .Select(item => dumpTexturePageItem(item, worker, Paths.JoinVerifyWithinDirectory(dir, $"texture_page_{Data.TexturePageItems.IndexOf(item)}.png"), reuse))
+        .Select(item => dumpTexturePageItem(item, worker, Path.Combine(dir, $"texture_page_{Data.TexturePageItems.IndexOf(item)}.png"), reuse))
         .ToList());
 
     return tpageitems;
@@ -362,7 +362,7 @@ if (forcePOT)
 bool reuseTextures = false;
 
 // Setup packager directory
-string packagerDirectory = Path.Join(ExePath, "Packager");
+string packagerDirectory = Path.Combine(ExePath, "Packager");
 if (Directory.Exists(packagerDirectory))
 {
     reuseTextures = ScriptQuestion("Do you want to reuse previously extracted page items?");
@@ -417,11 +417,12 @@ int lastTextPage = Data.EmbeddedTextures.Count - 1;
 // Now recreate texture pages and link the items to the pages
 ResetProgress("Regenerating Texture Pages");
 
-var f = new StreamWriter(Path.Join(packagerDirectory, "log.txt"));
+var f = new StreamWriter(Path.Combine(packagerDirectory, "log.txt"));
 int atlasCount = 0;
 
 // Group items based on which atlas they belong to, if they do
 var groups = texPageItems.GroupBy(item => item.Atlas);
+SyncBinding("EmbeddedTextures", true);
 await Task.Run(() =>
 {
     foreach (var group in groups)
@@ -435,10 +436,7 @@ await Task.Run(() =>
             // Textures that are contained into an atlas
             UndertaleEmbeddedTexture tex = new UndertaleEmbeddedTexture();
             tex.Name = new UndertaleString($"Texture {++lastTextPage}");
-            MainThreadAction(() =>
-            {
-                Data.EmbeddedTextures.Add(tex);
-            });
+            Data.EmbeddedTextures.Add(tex);
             
             using MagickImage newAtlasImage = new(MagickColors.Transparent, (uint)atlas.Width, (uint)atlas.Height);
 
@@ -467,7 +465,7 @@ await Task.Run(() =>
             }
 
             // Save atlas into a file
-            string atlasFile = Paths.JoinVerifyWithinDirectory(packagerDirectory, $"atlas_{atlasName}.png");
+            string atlasFile = Path.Combine(packagerDirectory, $"atlas_{atlasName}.png");
             TextureWorker.SaveImageToFile(newAtlasImage, atlasFile);
 
             // Assign new texture image
@@ -482,10 +480,7 @@ await Task.Run(() =>
 
                 UndertaleEmbeddedTexture tex = new UndertaleEmbeddedTexture();
                 tex.Name = new UndertaleString($"Texture {++lastTextPage}");
-                MainThreadAction(() =>
-                {
-                    Data.EmbeddedTextures.Add(tex);
-                });
+                Data.EmbeddedTextures.Add(tex);
 
                 // Create POT texture if needed
                 string itemFile = item.Filename;
@@ -502,7 +497,7 @@ await Task.Run(() =>
                         newAtlasImage.Composite(source, 0, 0, CompositeOperator.Copy);
                     }
 
-                    itemFile = Paths.JoinVerifyWithinDirectory(packagerDirectory, $"pot_{texPageItems.IndexOf(item)}.png");
+                    itemFile = Path.Combine(packagerDirectory, $"pot_{texPageItems.IndexOf(item)}.png");
                     TextureWorker.SaveImageToFile(newAtlasImage, itemFile);
 
                     // Assign new texture image
@@ -527,6 +522,7 @@ await Task.Run(() =>
     }
 });
 
+DisableAllSyncBindings();
 f.Close();
 
 // Done.

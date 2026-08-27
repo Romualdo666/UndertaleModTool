@@ -16,10 +16,7 @@ else if (Data?.GeneralInfo?.DisplayName?.Content.ToLower() == "deltarune chapter
     return;
 }
 
-UndertaleModLib.Compiler.CodeImportGroup importGroup = new(Data)
-{
-    MainThreadAction = MainThreadAction
-};
+UndertaleModLib.Compiler.CodeImportGroup importGroup = new(Data);
 
 string bepisCode = "bepis";
 

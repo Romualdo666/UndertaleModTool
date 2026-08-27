@@ -3,10 +3,7 @@ ScriptMessage("DebugMsg - Displays dialogue messages\nwhile debug mode is enable
 
 var code = Data.GameObjects.ByName("obj_time").EventHandlerFor(EventType.Draw, EventSubtypeDraw.DrawGUI, Data);
 
-UndertaleModLib.Compiler.CodeImportGroup importGroup = new(Data)
-{
-    MainThreadAction = MainThreadAction
-};
+UndertaleModLib.Compiler.CodeImportGroup importGroup = new(Data);
 importGroup.QueueAppend(code, @"
 if global.debug 
 {

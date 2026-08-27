@@ -1,6 +1,5 @@
 using UndertaleModLib;
 using UndertaleModLib.Models;
-using UndertaleModLib.Util;
 using static UndertaleModLib.Models.UndertaleSound;
 using static UndertaleModLib.UndertaleData;
 using System.Threading.Tasks;
@@ -23,7 +22,7 @@ if (!usesAGRP)
 string importFolder = PromptChooseDirectory();
 if (importFolder is null)
 {
-    throw new ScriptCancelledException("The import folder was not set.");
+    throw new ScriptException("The import folder was not set.");
 }
 
 string[] dirFiles = Directory.GetFiles(importFolder);
@@ -61,6 +60,7 @@ maxCount = dirFiles.Length;
 SetProgressBar(null, "Importing sounds", 0, maxCount);
 StartProgressBarUpdater();
 
+SyncBinding("AudioGroups, EmbeddedAudio, Sounds, Strings", true);
 await Task.Run(() => 
 {
     foreach (string file in dirFiles)
@@ -148,15 +148,12 @@ await Task.Run(() =>
                     {
                         // Create a new audio group file, with the next available index (ignoring custom paths).
                         audioGroupID = Data.AudioGroups.Count;
-                        File.WriteAllBytes(Paths.JoinVerifyWithinDirectory(Path.GetDirectoryName(FilePath), $"audiogroup{audioGroupID}.dat"), Convert.FromBase64String("Rk9STQwAAABBVURPBAAAAAAAAAA="));
+                        File.WriteAllBytes(Path.Combine(Path.GetDirectoryName(FilePath), $"audiogroup{audioGroupID}.dat"), Convert.FromBase64String("Rk9STQwAAABBVURPBAAAAAAAAAA="));
 
                         // Add new entry to the data file.
-                        MainThreadAction(() =>
+                        Data.AudioGroups.Add(new UndertaleAudioGroup()
                         {
-                            Data.AudioGroups.Add(new UndertaleAudioGroup()
-                            {
-                                Name = Data.Strings.MakeString(audioGroupName)
-                            });
+                            Name = Data.Strings.MakeString(audioGroupName)
                         });
                     }
                 }
@@ -188,21 +185,18 @@ await Task.Run(() =>
                 {
                     relativeAudioGroupPath = $"audiogroup{audioGroupID}.dat";
                 }
-                string audioGroupPath = Paths.JoinVerifyWithinDirectory(Path.GetDirectoryName(FilePath), relativeAudioGroupPath);
+                string audioGroupPath = Path.Combine(Path.GetDirectoryName(FilePath), relativeAudioGroupPath);
                 using (FileStream audioGroupReadStream = new(audioGroupPath, FileMode.Open, FileAccess.Read))
                 {
                     audioGroupDat = UndertaleIO.Read(audioGroupReadStream);
                 }
 
                 // Add the EmbeddedAudio entry to the audiogroup data.
-                MainThreadAction(() =>
+                audioGroupDat.EmbeddedAudio.Add(soundData);
+                if (existingSound is not null)
                 {
-                    audioGroupDat.EmbeddedAudio.Add(soundData);
-                    if (existingSound is not null)
-                    {
-                        audioGroupDat.EmbeddedAudio.Remove(existingSound.AudioFile);
-                    }
-                });
+                    audioGroupDat.EmbeddedAudio.Remove(existingSound.AudioFile);
+                }
                 audioID = audioGroupDat.EmbeddedAudio.Count - 1;
 
                 // Write audio group back to disk.
@@ -212,14 +206,11 @@ await Task.Run(() =>
             else
             {
                 // Update data file's embedded audio.
-                MainThreadAction(() =>
+                Data.EmbeddedAudio.Add(soundData);
+                if (existingSound is not null)
                 {
-                    Data.EmbeddedAudio.Add(soundData);
-                    if (existingSound is not null)
-                    {
-                        Data.EmbeddedAudio.Remove(existingSound.AudioFile);
-                    }
-                });
+                    Data.EmbeddedAudio.Remove(existingSound.AudioFile);
+                }
                 embAudioID = Data.EmbeddedAudio.Count - 1;
             }
         }
@@ -279,7 +270,10 @@ await Task.Run(() =>
         {
             UndertaleSound newSound = new()
             {
+                Name = Data.Strings.MakeString(soundName),
                 Flags = flags,
+                Type = isOGG ? Data.Strings.MakeString(".ogg") : Data.Strings.MakeString(".wav"),
+                File = Data.Strings.MakeString(filename),
                 Effects = 0,
                 Volume = 1.0f,
                 Pitch = 1.0f,
@@ -288,43 +282,29 @@ await Task.Run(() =>
                 AudioGroup = finalGroupReference,
                 GroupID = needAGRP ? audioGroupID : Data.GetBuiltinSoundGroupID()
             };
-            MainThreadAction(() =>
-            {
-                newSound.Name = Data.Strings.MakeString(soundName);
-                newSound.Type = isOGG ? Data.Strings.MakeString(".ogg") : Data.Strings.MakeString(".wav");
-                newSound.File = Data.Strings.MakeString(filename);
-                Data.Sounds.Add(newSound);
-                Project?.MarkAssetForExport(newSound);
-            });
+            Data.Sounds.Add(newSound);
         }
         else if (replaceSoundPropertiesCheck)
         {
-            MainThreadAction(() =>
-            {
-                existingSound.Flags = flags;
-                existingSound.Type = isOGG ? Data.Strings.MakeString(".ogg") : Data.Strings.MakeString(".wav");
-                existingSound.File = Data.Strings.MakeString(filename);
-                existingSound.Effects = 0;
-                existingSound.Volume = 1.0f;
-                existingSound.Pitch = 1.0f;
-                existingSound.AudioID = audioID;
-                existingSound.AudioFile = finalAudioReference;
-                existingSound.AudioGroup = finalGroupReference;
-                existingSound.GroupID = needAGRP ? audioGroupID : Data.GetBuiltinSoundGroupID();
-                Project?.MarkAssetForExport(existingSound);
-            });
+            existingSound.Flags = flags;
+            existingSound.Type = isOGG ? Data.Strings.MakeString(".ogg") : Data.Strings.MakeString(".wav");
+            existingSound.File = Data.Strings.MakeString(filename);
+            existingSound.Effects = 0;
+            existingSound.Volume = 1.0f;
+            existingSound.Pitch = 1.0f;
+            existingSound.AudioID = audioID;
+            existingSound.AudioFile = finalAudioReference;
+            existingSound.AudioGroup = finalGroupReference;
+            existingSound.GroupID = needAGRP ? audioGroupID : Data.GetBuiltinSoundGroupID();
         }
         else
         {
-            MainThreadAction(() =>
-            {
-                existingSound.AudioFile = finalAudioReference;
-                existingSound.AudioID = audioID;
-                Project?.MarkAssetForExport(existingSound);
-            });
+            existingSound.AudioFile = finalAudioReference;
+            existingSound.AudioID = audioID;
         }
     }
 });
+DisableAllSyncBindings();
 
 await StopProgressBarUpdater();
 ScriptMessage("Sounds added successfully!");

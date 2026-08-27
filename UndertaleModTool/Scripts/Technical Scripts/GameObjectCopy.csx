@@ -14,10 +14,8 @@ ScriptMessage("Select the file to copy from");
 
 UndertaleData DonorData;
 string DonorDataPath = PromptLoadFile(null, null);
-if (DonorDataPath is null)
-{
-    throw new ScriptCancelledException("The donor data path was not set.");
-}
+if (DonorDataPath == null)
+    throw new ScriptException("The donor data path was not set.");
 
 using (var stream = new FileStream(DonorDataPath, FileMode.Open, FileAccess.Read))
     DonorData = UndertaleIO.Read(stream, (warning, _) => ScriptMessage("A warning occured while trying to load " + DonorDataPath + ":\n" + warning));
@@ -136,10 +134,7 @@ for (var j = 0; j < splitStringsList.Count; j++)
                                 }
                                 try
                                 {
-                                    UndertaleModLib.Compiler.CodeImportGroup importGroup = new(Data)
-                                    {
-                                        MainThreadAction = MainThreadAction
-                                    };
+                                    UndertaleModLib.Compiler.CodeImportGroup importGroup = new(Data);
                                     importGroup.QueueReplace(donorACT.CodeId?.Name?.Content, codeToCopy);
                                     importGroup.Import();
                                 }

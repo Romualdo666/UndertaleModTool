@@ -4,19 +4,18 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Collections;
-using UndertaleModLib.Util;
 
 EnsureDataLoaded();
 
-string codeFolder = Path.Join(Path.GetDirectoryName(FilePath), "Export_Code");
+string codeFolder = Path.Combine(Path.GetDirectoryName(FilePath), "Export_Code");
 Directory.CreateDirectory(codeFolder);
 
 GlobalDecompileContext globalDecompileContext = new(Data);
 Underanalyzer.Decompiler.IDecompileSettings decompilerSettings = Data.ToolInfo.DecompilerSettings;
 
 string line;
-string path_error = Path.Join(codeFolder, "Status.txt");
-string path_error2 = Path.Join(codeFolder, "Errored_Code_Entries.txt");
+string path_error = Path.Combine(codeFolder, "Status.txt");
+string path_error2 = Path.Combine(codeFolder, "Errored_Code_Entries.txt");
 string errored_code = "";
 ArrayList errored_code_arr = new ArrayList();
 bool errors_recorded = false;
@@ -116,7 +115,7 @@ await Task.Run(() =>
             }
             if (!isErrorCodeEntry || !skip)
             {
-                string path = Paths.JoinVerifyWithinDirectory(codeFolder, code.Name.Content + ".gml");
+                string path = Path.Combine(codeFolder, code.Name.Content + ".gml");
                 try
                 {
                     File.WriteAllText(path, (code != null 
@@ -132,7 +131,7 @@ await Task.Run(() =>
         }
         else
         {
-            string path = Paths.JoinVerifyWithinDirectory(codeFolder, code.Name.Content + ".gml");
+            string path = Path.Combine(codeFolder, code.Name.Content + ".gml");
             try
             {
                 File.WriteAllText(path, (code != null 
@@ -165,7 +164,7 @@ HideProgressBar();
 ScriptMessage("Export Complete.\n\nLocation: " + codeFolder);
 if (File.Exists(path_error2))
 {
-    string asmFolder = Path.Join(Path.GetDirectoryName(FilePath), "Error_Assembly");
+    string asmFolder = Path.Combine(Path.GetDirectoryName(FilePath), "Error_Assembly");
     Directory.CreateDirectory(asmFolder);
     if (errored_code_arr.Count > 0)
     {
@@ -173,7 +172,7 @@ if (File.Exists(path_error2))
         {
             string codename = errored_code_arr[i].ToString();
             UndertaleCode code = Data.Code.ByName(codename);
-            string asmPath = Paths.JoinVerifyWithinDirectory(asmFolder, code.Name.Content + ".asm");
+            string asmPath = Path.Combine(asmFolder, code.Name.Content + ".asm");
             try
             {
                 File.WriteAllText(asmPath, (code != null ? code.Disassemble(Data.Variables, Data.CodeLocals?.For(code)) : ""));

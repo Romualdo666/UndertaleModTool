@@ -23,12 +23,10 @@ List<UndertaleCode> toDump = Data.Code.Where(c => c.ParentEntry is null).ToList(
 SetProgressBar(null, "Code Entries", 0, toDump.Count);
 StartProgressBarUpdater();
 
+SyncBinding("Strings, Variables, Functions", true);
 await Task.Run(() =>
 {
-    UndertaleModLib.Compiler.CodeImportGroup importGroup = new(Data, null, Data.ToolInfo.DecompilerSettings)
-    {
-        MainThreadAction = MainThreadAction
-    };
+    UndertaleModLib.Compiler.CodeImportGroup importGroup = new(Data, null, Data.ToolInfo.DecompilerSettings);
     foreach (UndertaleCode code in toDump)
     {
         if (code is not null)
@@ -47,6 +45,7 @@ await Task.Run(() =>
     SetProgressBar(null, "Final code import...", toDump.Count, toDump.Count);
     importGroup.Import();
 });
+DisableAllSyncBindings();
 
 await StopProgressBarUpdater();
 HideProgressBar();

@@ -4,7 +4,6 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Linq;
-using UndertaleModLib.Util;
 
 EnsureDataLoaded();
 
@@ -39,7 +38,7 @@ void DumpCode(UndertaleCode code)
 {
     if (code is not null)
     {
-        string path = Paths.JoinVerifyWithinDirectory(codeFolder, $"{code.Name.Content}.asm");
+        string path = Path.Combine(codeFolder, $"{code.Name.Content}.asm");
         try
         {
             File.WriteAllText(path, code.Disassemble(Data.Variables, Data.CodeLocals?.For(code)));

@@ -2,7 +2,6 @@ using System.Text;
 using System;
 using System.IO;
 using System.Threading.Tasks;
-using UndertaleModLib.Util;
 
 EnsureDataLoaded();
 
@@ -21,7 +20,7 @@ await Task.Run(() =>
     {
         try
         {
-            using FileStream fs = new(Paths.JoinVerifyWithinDirectory(texturesFolder, $"{i}.png"), FileMode.Create);
+            using FileStream fs = new(Path.Combine(texturesFolder, $"{i}.png"), FileMode.Create);
             Data.EmbeddedTextures[i].TextureData.Image.SavePng(fs);
         }
         catch (Exception ex)

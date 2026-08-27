@@ -4,14 +4,13 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Linq;
-using UndertaleModLib.Util;
 
 EnsureDataLoaded();
 
-string codeFolder = Path.Join(Path.GetDirectoryName(FilePath), "Export_Code");
+string codeFolder = Path.Combine(Path.GetDirectoryName(FilePath), "Export_Code");
 if (Directory.Exists(codeFolder))
 {
-    codeFolder = Path.Join(Path.GetDirectoryName(FilePath), "Export_Code_2");
+    codeFolder = Path.Combine(Path.GetDirectoryName(FilePath), "Export_Code_2");
 }
 
 Directory.CreateDirectory(codeFolder);
@@ -37,7 +36,7 @@ void DumpCode()
 {
     foreach (UndertaleCode code in toDump)
     {
-        string path = Paths.JoinVerifyWithinDirectory(codeFolder, code.Name.Content + ".gml");
+        string path = Path.Combine(codeFolder, code.Name.Content + ".gml");
         if (code.ParentEntry == null)
         {
             try
@@ -48,38 +47,38 @@ void DumpCode()
             }
             catch (Exception e)
             {
-                string failedFolder = Path.Join(codeFolder, "Failed");
+                string failedFolder = Path.Combine(codeFolder, "Failed");
                 if (!Directory.Exists(failedFolder))
                 {
                     Directory.CreateDirectory(failedFolder);
                 }
-                path = Paths.JoinVerifyWithinDirectory(failedFolder, code.Name.Content + ".gml");
+                path = Path.Combine(failedFolder, code.Name.Content + ".gml");
                 File.WriteAllText(path, "/*\nDECOMPILER FAILED!\n\n" + e.ToString() + "\n*/");
                 failed += 1;
             }
         }
         else
         {
-            string duplicatesFolder = Path.Join(codeFolder, "Duplicates");
+            string duplicatesFolder = Path.Combine(codeFolder, "Duplicates");
             if (!Directory.Exists(duplicatesFolder))
             {
                 Directory.CreateDirectory(duplicatesFolder);
             }
             try
             {
-                path = Paths.JoinVerifyWithinDirectory(duplicatesFolder, code.Name.Content + ".gml");
+                path = Path.Combine(duplicatesFolder, code.Name.Content + ".gml");
                 File.WriteAllText(path, (code != null
                     ? new Underanalyzer.Decompiler.DecompileContext(globalDecompileContext, code, decompilerSettings).DecompileToString()
                     : ""));
             }
             catch (Exception e)
             {
-                string duplicatesFailed = Path.Join(duplicatesFolder, "Failed");
+                string duplicatesFailed = Path.Combine(duplicatesFolder, "Failed");
                 if (!Directory.Exists(duplicatesFailed))
                 {
                     Directory.CreateDirectory(duplicatesFailed);
                 }
-                path = Paths.JoinVerifyWithinDirectory(duplicatesFailed, code.Name.Content + ".gml");
+                path = Path.Combine(duplicatesFailed, code.Name.Content + ".gml");
                 File.WriteAllText(path, "/*\nDECOMPILER FAILED!\n\n" + e.ToString() + "\n*/");
                 failed += 1;
             }

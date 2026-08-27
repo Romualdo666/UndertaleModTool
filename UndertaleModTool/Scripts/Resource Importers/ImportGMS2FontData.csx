@@ -38,10 +38,10 @@ using (StreamReader file = File.OpenText(importFile))
 string fontPath = Path.GetDirectoryName(importFile);
 string yyFilename = Path.GetFileNameWithoutExtension(importFile);
 string fontName = (string)fontData["name"] ?? yyFilename;
-string fontTexturePath = Paths.JoinVerifyWithinDirectory(fontPath, yyFilename + ".png");
+string fontTexturePath = Path.Combine(fontPath, yyFilename + ".png");
 // Failsafe to use font name
 if (!File.Exists(fontTexturePath))
-    fontTexturePath = Paths.JoinVerifyWithinDirectory(fontPath, fontName + ".png");
+    fontTexturePath = Path.Combine(fontPath, fontName + ".png");
 // If we still can't find the texture
 if (!File.Exists(fontTexturePath))
     throw new ScriptException(

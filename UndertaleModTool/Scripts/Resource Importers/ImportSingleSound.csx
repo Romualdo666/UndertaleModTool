@@ -1,6 +1,5 @@
 using UndertaleModLib;
 using UndertaleModLib.Models;
-using UndertaleModLib.Util;
 using static UndertaleModLib.Models.UndertaleSound;
 using static UndertaleModLib.UndertaleData;
 
@@ -82,7 +81,7 @@ if (needAGRP && usesAGRP && embedSound)
     if (audioGroupID == -1)
     {
         // Still -1? Create a new one...
-        File.WriteAllBytes(Paths.JoinVerifyWithinDirectory(Path.GetDirectoryName(FilePath), $"audiogroup{Data.AudioGroups.Count}.dat"), Convert.FromBase64String("Rk9STQwAAABBVURPBAAAAAAAAAA="));
+        File.WriteAllBytes(Path.Combine(Path.GetDirectoryName(FilePath), $"audiogroup{Data.AudioGroups.Count}.dat"), Convert.FromBase64String("Rk9STQwAAABBVURPBAAAAAAAAAA="));
         UndertaleAudioGroup newAudioGroup = new()
         {
             Name = Data.Strings.MakeString(audioGroupName),
@@ -130,7 +129,7 @@ if (needAGRP)
     {
         relativeAudioGroupPath = $"audiogroup{audioGroupID}.dat";
     }
-    string audioGroupPath = Paths.JoinVerifyWithinDirectory(Path.GetDirectoryName(FilePath), relativeAudioGroupPath);
+    string audioGroupPath = Path.Combine(Path.GetDirectoryName(FilePath), relativeAudioGroupPath);
     using (FileStream audioGroupReadStream = new(audioGroupPath, FileMode.Open, FileAccess.Read))
     {
         audioGroupDat = UndertaleIO.Read(audioGroupReadStream);
@@ -217,7 +216,6 @@ if (existingSound is null)
         GroupID = needAGRP ? audioGroupID : Data.GetBuiltinSoundGroupID()
     };
     Data.Sounds.Add(newSound);
-    Project?.MarkAssetForExport(newSound);
     ChangeSelection(newSound);
 }
 else if (replaceSoundPropertiesCheck)
@@ -232,14 +230,12 @@ else if (replaceSoundPropertiesCheck)
     existingSound.AudioFile = finalAudioReference;
     existingSound.AudioGroup = finalGroupReference;
     existingSound.GroupID = needAGRP ? audioGroupID : Data.GetBuiltinSoundGroupID();
-    Project?.MarkAssetForExport(existingSound);
     ChangeSelection(existingSound);
 }
 else
 {
     existingSound.AudioFile = finalAudioReference;
     existingSound.AudioID = audioID;
-    Project?.MarkAssetForExport(existingSound);
     ChangeSelection(existingSound);
 }
     

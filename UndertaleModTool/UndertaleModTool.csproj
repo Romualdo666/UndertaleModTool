@@ -9,7 +9,7 @@
         <DebugType>embedded</DebugType>
         <Platforms>AnyCPU;x64</Platforms>
         <RuntimeIdentifiers>win-x64;win-x86</RuntimeIdentifiers>
-        <LangVersion>13.0</LangVersion>
+        <LangVersion>10</LangVersion>
         <ApplicationIcon>icon.ico</ApplicationIcon>
         <GenerateDocumentationFile>True</GenerateDocumentationFile>
         <IncludeAllContentForSelfExtract>true</IncludeAllContentForSelfExtract>
@@ -22,6 +22,7 @@
         <ApplicationManifest>app.manifest</ApplicationManifest>
     </PropertyGroup>
     <ItemGroup>
+      <None Remove="Corrections\README.txt" />
       <None Remove="Resources\tabs_left_button.png" />
       <None Remove="Resources\tabs_right_button.png" />
       <None Remove="Resources\X_Down.png" />
@@ -80,7 +81,7 @@
           <PrivateAssets>all</PrivateAssets>
           <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="log4net" Version="3.3.0" />
+        <PackageReference Include="log4net" Version="3.2.0" />
         <PackageReference Include="Microsoft-WindowsAPICodePack-Shell">
             <Version>1.1.5</Version>
         </PackageReference>
@@ -165,6 +166,10 @@
     <ItemGroup>
         <Folder Include="Scripts" />
         <Content Include="Scripts/**">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+            <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+        </Content>
+        <Content Include="Corrections/**">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
             <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
         </Content>

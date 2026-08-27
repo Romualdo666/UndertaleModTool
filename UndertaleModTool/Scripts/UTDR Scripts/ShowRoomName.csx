@@ -5,10 +5,7 @@ Data.Functions.EnsureDefined("room_get_name", Data.Strings); // required for Del
 string displayName = Data?.GeneralInfo?.DisplayName?.Content.ToLower();
 bool isDeltarune = displayName.StartsWith("deltarune chapter");
 
-UndertaleModLib.Compiler.CodeImportGroup importGroup = new(Data)
-{
-    MainThreadAction = MainThreadAction
-};
+UndertaleModLib.Compiler.CodeImportGroup importGroup = new(Data);
 var gml_Object_obj_time_Draw_64 = Data.GameObjects.ByName("obj_time").EventHandlerFor(EventType.Draw, EventSubtypeDraw.DrawGUI, Data);
 if (isDeltarune)
 {

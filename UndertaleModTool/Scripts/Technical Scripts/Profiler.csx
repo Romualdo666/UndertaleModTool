@@ -101,10 +101,7 @@ ProfileModeExempt();
 
 void ClearCustomGML()
 {
-    UndertaleModLib.Compiler.CodeImportGroup importGroup = new(Data)
-    {
-        MainThreadAction = MainThreadAction
-    };
+    UndertaleModLib.Compiler.CodeImportGroup importGroup = new(Data);
     importGroup.QueueReplace("gml_Object___obj_executionorder___Destroy_0", "");
     importGroup.QueueReplace("gml_Object___obj_executionorder___Create_0", "");
     importGroup.QueueReplace("gml_Object___obj_executionorder___Draw_64", "");
@@ -122,10 +119,7 @@ SetUpCustomGML();
 
 void SetUpCustomGML()
 {
-    UndertaleModLib.Compiler.CodeImportGroup importGroup = new(Data)
-    {
-        MainThreadAction = MainThreadAction
-    };
+    UndertaleModLib.Compiler.CodeImportGroup importGroup = new(Data);
 
     // __obj_executionorder__
     importGroup.QueueReplace("gml_Object___obj_executionorder___Destroy_0", @"
@@ -622,10 +616,7 @@ void PersistentObjectSetup(string objectName)
     }
     if (Data.GeneralInfo.Name.Content.StartsWith("UNDERTALE"))
     {
-        UndertaleModLib.Compiler.CodeImportGroup importGroup = new(Data)
-        {
-            MainThreadAction = MainThreadAction
-        };
+        UndertaleModLib.Compiler.CodeImportGroup importGroup = new(Data);
         importGroup.QueueReplace(Data.GameObjects.ByName("obj_time").EventHandlerFor(EventType.KeyPress, (uint)114, Data), "");
         importGroup.Import();
     }

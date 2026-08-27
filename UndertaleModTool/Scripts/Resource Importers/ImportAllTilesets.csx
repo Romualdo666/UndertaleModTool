@@ -14,7 +14,7 @@ EnsureDataLoaded();
 string subPath = PromptChooseDirectory();
 if (subPath is null)
 {
-    throw new ScriptCancelledException("The import folder was not set.");
+    throw new ScriptException("The import folder was not set.");
 }
 
 SetProgressBar(null, "Tilesets", 0, Data.Backgrounds.Count);
@@ -38,14 +38,11 @@ void ImportTileset(UndertaleBackground tileset)
         string filename = $"{tileset.Name.Content}.png";
         try
         {
-            string path = Paths.JoinVerifyWithinDirectory(subPath, filename);
+            string path = Path.Combine(subPath, filename);
             if (File.Exists(path))
             {
                 using MagickImage img = TextureWorker.ReadBGRAImageFromFile(path);
-                MainThreadAction(() =>
-                {
-                    tileset.Texture.ReplaceTexture(img);
-                });
+                tileset.Texture.ReplaceTexture(img);
             }
         }
         catch (Exception ex)

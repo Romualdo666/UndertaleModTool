@@ -20,8 +20,7 @@ all Undertale and Deltarune versions.");
 
 UndertaleModLib.Compiler.CodeImportGroup importGroup = new(Data)
 {
-    ThrowOnNoOpFindReplace = true,
-    MainThreadAction = MainThreadAction
+    ThrowOnNoOpFindReplace = true
 };
 
 // Removes the invoking of the dog check script and the actual check itself from "gml_Script_scr_load".

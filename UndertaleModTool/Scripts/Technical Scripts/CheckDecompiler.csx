@@ -38,13 +38,15 @@ List<string> failedCompileList = new();
 List<string> failedAssemblyList = new();
 List<string> failedDecompiledList = new();
 
+SyncBinding("Strings, Code, CodeLocals, Scripts, GlobalInitScripts, GameObjects, Functions, Variables", true);
 await Task.Run(() => CheckCode());
+DisableAllSyncBindings();
 
-string failedCompilePath = Path.Join(Path.GetDirectoryName(FilePath), "failed-compile.txt");
+string failedCompilePath = Path.Combine(Path.GetDirectoryName(FilePath), "failed-compile.txt");
 File.WriteAllText(failedCompilePath, string.Join('\n', failedCompileList));
-string failedAssemblyPath = Path.Join(Path.GetDirectoryName(FilePath), "failed-assembly.txt");
+string failedAssemblyPath = Path.Combine(Path.GetDirectoryName(FilePath), "failed-assembly.txt");
 File.WriteAllText(failedAssemblyPath, string.Join('\n', failedAssemblyList));
-string failedDecompiledPath = Path.Join(Path.GetDirectoryName(FilePath), "failed-decompiled.txt");
+string failedDecompiledPath = Path.Combine(Path.GetDirectoryName(FilePath), "failed-decompiled.txt");
 File.WriteAllText(failedDecompiledPath, string.Join('\n', failedDecompiledList));
 
 string assetInfo = "";
@@ -81,10 +83,7 @@ ScriptMessage(
 
 void CheckCode()
 {
-    CompileGroup group = new(Data, globalDecompileContext)
-    {
-        MainThreadAction = MainThreadAction
-    };
+    CompileGroup group = new(Data, globalDecompileContext);
     group.PersistLinkingLookups = true;
     foreach (UndertaleCode code in toCheck)
     {

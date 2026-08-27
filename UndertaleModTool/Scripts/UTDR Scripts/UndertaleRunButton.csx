@@ -22,8 +22,7 @@ ScriptMessage("Add a run button to Undertale (Backspace)");
 
 UndertaleModLib.Compiler.CodeImportGroup importGroup = new(Data)
 {
-    ThrowOnNoOpFindReplace = true,
-    MainThreadAction = MainThreadAction
+    ThrowOnNoOpFindReplace = true
 };
 importGroup.QueueFindReplace("gml_Object_obj_mainchara_Step_0", "(global.debug == 1)", "(true)");
 importGroup.Import();

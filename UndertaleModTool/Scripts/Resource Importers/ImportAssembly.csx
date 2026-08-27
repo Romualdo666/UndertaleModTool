@@ -12,19 +12,20 @@ EnsureDataLoaded();
 // Check code directory.
 string importFolder = PromptChooseDirectory();
 if (importFolder == null)
-    throw new ScriptCancelledException("The import folder was not set.");
+    throw new ScriptException("The import folder was not set.");
 
 string[] dirFiles = Directory.GetFiles(importFolder);
 if (dirFiles.Length == 0)
-    throw new ScriptCancelledException("The selected folder is empty.");
+    throw new ScriptException("The selected folder is empty.");
 else if (!dirFiles.Any(x => x.EndsWith(".asm")))
-    throw new ScriptCancelledException("The selected folder doesn't contain any ASM file.");
+    throw new ScriptException("The selected folder doesn't contain any ASM file.");
 
 bool stopOnError = ScriptQuestion("Stop importing on error?");
 
 SetProgressBar(null, "Files", 0, dirFiles.Length);
 StartProgressBarUpdater();
 
+SyncBinding("Strings, Code, CodeLocals, Scripts, GlobalInitScripts, GameObjects, Functions, Variables", true);
 await Task.Run(() => 
 {
     foreach (string file in dirFiles)
@@ -36,11 +37,7 @@ await Task.Run(() =>
         {
             try
             {
-                List<UndertaleInstruction> instructions = Assembler.Assemble(asm, Data, MainThreadAction);
-                MainThreadAction(() =>
-                {
-                    code.Replace(instructions);
-                });
+                code.Replace(Assembler.Assemble(asm, Data));
             }
             catch (Exception e)
             {
@@ -69,6 +66,7 @@ await Task.Run(() =>
         IncrementProgress();
     }
 });
+DisableAllSyncBindings();
 
 await StopProgressBarUpdater();
 HideProgressBar();
