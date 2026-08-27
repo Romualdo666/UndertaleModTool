@@ -197,7 +197,10 @@
       </EmbeddedResource>
     </ItemGroup>
     <ItemGroup>
-      <None Update="test.csx">
+      <None Update="ImportPageItem.csx">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+      <None Update="ImportSprite.csx">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </None>
     </ItemGroup>

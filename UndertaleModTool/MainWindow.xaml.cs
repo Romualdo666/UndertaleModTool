@@ -791,14 +791,25 @@ namespace UndertaleModTool
                         if (this.ShowQuestion($"Open {filepath} as a data file?") == MessageBoxResult.Yes)
                             await LoadFile(filepath, true);
                     }
-                    else if (fileext == ".png" || fileext == ".gif")
+                    else if (fileext == ".png")
                     {
                         if (CanSave != true)
                             this.ShowMessage("You have to open a data.win beforehand!");
                         else
                         {
                             LastImageDrop = filepath;
-                            var testpath = Path.Combine(ExePath, "test.csx");
+                            var testpath = Path.Combine(ExePath, "ImportPageItem.csx");
+                            await RunScript(testpath);
+                        }
+                    }
+                    else if (fileext == ".gif")
+                    {
+                        if (CanSave != true)
+                            this.ShowMessage("You have to open a data.win beforehand!");
+                        else
+                        {
+                            LastImageDrop = filepath;
+                            var testpath = Path.Combine(ExePath, "ImportSprite.csx");
                             await RunScript(testpath);
                         }
                     }

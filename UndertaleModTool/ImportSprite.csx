@@ -1073,19 +1073,6 @@ Pressing ""No"" will cause the program to ignore these images.");*/
             {
                 continue;
             }
-            string prevFrameName = spriteName + "_" + prevframe.ToString() + ".png";
-            string[] previousFrameFiles = Directory.GetFiles(importFolder, prevFrameName, SearchOption.AllDirectories);
-            if (previousFrameFiles.Length < 1)
-            {
-                if (frame == 1)
-                {
-                    spritesStartAt1.Add(spriteName);
-                }
-                else
-                {
-                    throw new ScriptException(spriteName + " is missing one or more indexes. The detected missing index is: " + prevFrameName);
-                }
-            }
         }
     }
     return importFolder;
