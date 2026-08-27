@@ -12,6 +12,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Media;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -78,9 +79,15 @@ namespace UndertaleModTool
         private ConcurrentDictionary<SpriteInstance, Layer> sprInstDict = new();
         private ConcurrentDictionary<ParticleSystemInstance, Layer> partSysInstDict = new();
 
+        public static double _tempWidth = 40;
+        public static double _tempHeight = 40;
+        public static double _tempThick = 1;
+
         public UndertaleRoomEditor()
         {
             InitializeComponent();
+
+            CompositionTarget.Rendering += OnRenderFrame;
 
             ((System.Windows.Controls.Image)mainWindow.FindName("Flowey")).Opacity = 0;
             ((System.Windows.Controls.Image)mainWindow.FindName("FloweyLeave")).Opacity = 0;
@@ -92,6 +99,53 @@ namespace UndertaleModTool
             Unloaded += UndertaleRoomEditor_Unloaded;
             DataContextChanged += UndertaleRoomEditor_DataContextChanged;
         }
+
+        private void OnRenderFrame(object sender, EventArgs e)
+        {
+            var _thisroom = this.DataContext as UndertaleRoom;
+            var _changed = false;
+
+            if (_thisroom == null)
+                return;
+
+            if (_thisroom.GridWidth != _tempWidth)
+            {
+                _tempWidth = _thisroom.GridWidth;
+                _changed = true;
+            }
+
+            if (_thisroom.GridHeight != _tempHeight)
+            {
+                _tempHeight = _thisroom.GridHeight;
+                _changed = true;
+            }
+
+            if (_thisroom.GridThicknessPx != _tempThick)
+            {
+                _tempThick = _thisroom.GridThicknessPx;
+                _changed = true;
+            }
+
+            if (_changed)
+            {
+                var _cache = System.IO.Path.Combine(MainWindow.RoomCacheFolder, mainWindow.CurProfileName);
+
+                if (!Directory.Exists(_cache))
+                    Directory.CreateDirectory(_cache);
+
+                _cache = System.IO.Path.Combine(_cache, _thisroom.Name.ToString());
+                _cache = _cache.Replace("\"", "");
+                _cache += ".txt";
+
+                using (StreamWriter __writer = new StreamWriter(_cache))
+                {
+                    __writer.WriteLine(_tempWidth);
+                    __writer.WriteLine(_tempHeight);
+                    __writer.WriteLine(_tempThick);
+                }
+            }
+        }
+
         private void DataUserControl_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
         {
             UndertaleRoom code = this.DataContext as UndertaleRoom;
@@ -108,6 +162,7 @@ namespace UndertaleModTool
 
             ((Label)this.FindName("RoomObjectLabel")).Content = idString;
         }
+
         private void DataUserControl_Unloaded(object sender, RoutedEventArgs e)
         {
             var floweranim = ((System.Windows.Controls.Image)mainWindow.FindName("Flowey"));
@@ -2241,7 +2296,50 @@ namespace UndertaleModTool
                 room.GridThicknessPx = Settings.Instance.GlobalGridThickness;
             else
                 room.GridThicknessPx = 1;
+
             room.SetupRoom(!Settings.Instance.GridWidthEnabled, !Settings.Instance.GridHeightEnabled);
+
+            if (SettingsWindow.ProfileModeEnabled)
+            {
+                var _cacheWidth = "";
+                var _cacheHeight = "";
+                var _cacheThickness = "";
+
+                var _cache = System.IO.Path.Combine(MainWindow.RoomCacheFolder, mainWindow.CurProfileName);
+
+                if (!Directory.Exists(_cache))
+                    Directory.CreateDirectory(_cache);
+
+                _cache = System.IO.Path.Combine(_cache, room.Name.ToString());
+                _cache = _cache.Replace("\"", "");
+                _cache += ".txt";
+
+                if (File.Exists(_cache))
+                {
+                    string[] __lines = File.ReadAllLines(_cache);
+
+                    _cacheWidth = __lines[0];
+                    _cacheHeight = __lines[1];
+                    _cacheThickness = __lines[2];
+
+                    room.GridWidth = Convert.ToDouble(_cacheWidth);
+                    room.GridHeight = Convert.ToDouble(_cacheHeight);
+                    room.GridThicknessPx = Convert.ToDouble(_cacheThickness);
+                }
+                else
+                {
+                    using (StreamWriter __writer = new StreamWriter(_cache))
+                    {
+                        __writer.WriteLine(room.GridWidth);
+                        __writer.WriteLine(room.GridHeight);
+                        __writer.WriteLine(room.GridThicknessPx);
+                    }
+                }
+
+                _tempWidth = room.GridWidth;
+                _tempHeight = room.GridHeight;
+                _tempThick = room.GridThicknessPx;
+            }
         }
 
         private void EditTiles_Click(object sender, RoutedEventArgs e)

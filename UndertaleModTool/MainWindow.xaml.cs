@@ -1,11 +1,13 @@
 ﻿#pragma warning disable CA1416 // Validate platform compatibility
 
+using ImageMagick;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Scripting;
 using Microsoft.CodeAnalysis.Scripting;
 using Microsoft.Win32;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using NVorbis.Contracts;
 using Ookii.Dialogs.Wpf;
 using System;
 using System.Collections;
@@ -28,6 +30,7 @@ using System.Runtime;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
+using System.Security.Policy;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -50,6 +53,7 @@ using UndertaleModLib.Util;
 using UndertaleModTool.Windows;
 using WpfAnimatedGif;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
+using static UndertaleModLib.Models.UndertaleSprite;
 using SystemJson = System.Text.Json;
 
 namespace UndertaleModTool
@@ -192,9 +196,11 @@ namespace UndertaleModTool
         public byte[] MD5CurrentlyLoaded = new byte[15];
         public byte[] remMD5 = new byte[15];
         public String CurProfileName = "null";
+        public String LastImageDrop = "null";
         public bool is_string = false;
         public static string AppDataFolder => Settings.AppDataFolder;
         public static string ProfilesFolder { get; } = Path.Combine(Settings.AppDataFolder, "Profiles");
+        public static string RoomCacheFolder { get; } = Path.Combine(Settings.AppDataFolder, "Room Cache");
         public static string CorrectionsFolder { get; } = Path.Combine(Program.GetExecutableDirectory(), "Corrections");
         public string ProfileHash = null;
         public bool CrashedWhileEditing = false;
@@ -785,6 +791,17 @@ namespace UndertaleModTool
                         if (this.ShowQuestion($"Open {filepath} as a data file?") == MessageBoxResult.Yes)
                             await LoadFile(filepath, true);
                     }
+                    else if (fileext == ".png" || fileext == ".gif")
+                    {
+                        if (CanSave != true)
+                            this.ShowMessage("You have to open a data.win beforehand!");
+                        else
+                        {
+                            LastImageDrop = filepath;
+                            var testpath = Path.Combine(ExePath, "test.csx");
+                            await RunScript(testpath);
+                        }
+                    }
                     // else, do something?
                 }
             }
@@ -1206,26 +1223,17 @@ namespace UndertaleModTool
 
                         async void LoadSpriteTexture(UndertaleSprite sprite)
                         {
-                            if (sprite is not null)
+                            if (sprite is null) return;
+                            if (sprite.Textures.FirstOrDefault()?.Texture is not { } texture) return;
+                            string name = sprite.Name.ToString();
+                            dialog?.Dispatcher.Invoke(DispatcherPriority.Normal, () =>
                             {
-                                var name = sprite.Name.ToString();
-                                if (sprite.Textures.Count > 0 && sprite.Textures[0]?.Texture is not null)
-                                {
-                                    dialog?.Dispatcher.Invoke(DispatcherPriority.Normal, () =>
-                                    {
-                                        dialog?.Update("Generating sprite cache...", "Loading " + sprite.Name.ToString() + "...", test, Data.Sprites.Count);
-                                    });
-                                    /*if (name.Contains("spr_quitmessage"))
-                                    {
-                                        this.ShowError("hello");
-                                        dobreak = true;
-                                    }
-                                    else*/
-                                    loader.Convert(sprite.Textures[0].Texture, null, null, null);
-                                    test++;
-                                    //this.ShowError("hello");
-                                }
-                            }
+                                dialog?.Update("Generating sprite cache...",
+                                               "Loading " + name + "...", test,
+                                               Data.Sprites.Count);
+                            });
+                            loader.Convert(texture, null, null, null);
+                            test++;
                         }
                         var isaudgroup = Path.GetExtension(filename) == ".dat";
 
